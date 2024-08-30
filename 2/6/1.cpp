@@ -102,6 +102,7 @@ private:
                 if (++m_pos == m_input.size())
                     return true;
             } while(m_input[m_pos] != '\n');
+            m_pos++;        //跳过\n
             return true;
         }
 
@@ -115,8 +116,8 @@ private:
                 {
                     return tl::unexpected { "text end with a single left comment pair `/*`" };
                 }
-            } while(m_input[m_pos] != '*' && m_input[m_pos] != '/');
-            m_pos++;
+            } while(m_input[m_pos] != '*' && m_input[m_pos + 1] != '/');
+            m_pos += 2;     //跳过*/
             return true;
         }
 

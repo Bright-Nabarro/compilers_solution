@@ -10,21 +10,27 @@
 using namespace std::string_literals;
 
 enum class TokenType {
-    Num,
+    Int,
+    Float,
     Id,
     KeyWord,
+    Operator,
 };
 
 std::string token_type_to_str(TokenType token)
 {
     switch(token)
     {
-    case TokenType::Num:
-        return "num";
+    case TokenType::Int:
+        return "integer";
+    case TokenType::Float:
+        return "float";
     case TokenType::Id:
         return "id";
     case TokenType::KeyWord:
         return "keyword";
+    case TokenType::Operator:
+        return "operator";
     default:
         return "unkown";
     }
@@ -36,9 +42,6 @@ struct Token
     std::string value;
     Token(TokenType t, std::string_view sv):
         type { t }, value { sv } {}
-    Token(TokenType t, std::string&& s):
-        type { t }, value { std::move(s) } {}
-
 };
 
 class Lexer
@@ -50,6 +53,7 @@ public:
         initial_keyword();
     }
 
+    [[nodiscard]]
     tl::expected<std::vector<Token>, std::string> tokenize()
     {
         std::vector<Token> result;
@@ -69,6 +73,8 @@ public:
                 return tl::unexpected { ret.error() };
 
             if (words(result)) continue;
+
+            if (opr(result)) continue;
             
             return tl::unexpected { std::format("unmatched word pos:[{}] char:{}", m_pos, m_input[m_pos]) };
         }
@@ -77,6 +83,7 @@ public:
     }
 
 private:
+    [[nodiscard]]
     bool space()
     {
         if (isspace(m_input[m_pos]))    //space
@@ -87,6 +94,7 @@ private:
         return false;
     }
 
+    [[nodiscard]]
     tl::expected<bool, std::string> comments()
     {
         if (m_input[m_pos] != '/')
@@ -102,6 +110,7 @@ private:
                 if (++m_pos == m_input.size())
                     return true;
             } while(m_input[m_pos] != '\n');
+            m_pos++;        //跳过\n
             return true;
         }
 
@@ -115,8 +124,8 @@ private:
                 {
                     return tl::unexpected { "text end with a single left comment pair `/*`" };
                 }
-            } while(m_input[m_pos] != '*' && m_input[m_pos] != '/');
-            m_pos++;
+            } while(m_input[m_pos] != '*' && m_input[m_pos + 1] != '/');
+            m_pos += 2;     //跳过*/
             return true;
         }
 
@@ -124,24 +133,50 @@ private:
         return false;
     }
 
-
+    [[nodiscard]]
     bool num(std::vector<Token>& result)
     {
+        bool isFloat = false;
+        
+        //允许单独.开头的浮点数
+        if (m_input[m_pos] == '.')
+        {
+            if (++m_pos == m_input.size())
+                return false;
+            isFloat = true;
+        }
+
         if (isdigit(m_input[m_pos]))   //num 
         {
             size_t beg = m_pos;
-            do {
-                m_pos++;
-            } while (m_pos != m_input.size() && isdigit(m_input[m_pos]));
+            while(true)
+            {
+                if (++m_pos == m_input.size())
+                    break;
 
+                if (m_input[m_pos] == '.')
+                    isFloat = true;
+                else if (!isdigit(m_input[m_pos]))
+                    break;
+            }
             assert(m_pos >= beg);
-            std::string value { m_input.cbegin() + beg, m_input.cbegin() + m_pos };
-            result.push_back(Token{TokenType::Num, std::move(value)});
+
+            if (isFloat)
+            {
+                result.emplace_back(TokenType::Float,
+                    std::string{m_input.cbegin() + beg, m_input.cbegin() + m_pos});
+            }
+            else
+            {
+                result.emplace_back(TokenType::Int,
+                    std::string{m_input.cbegin() + beg, m_input.cbegin() + m_pos});
+            }
             return true;
         }
         return false;
     }
 
+    [[nodiscard]]
     bool words(std::vector<Token>& result)
     {
         if (isalpha(m_input[m_pos])
@@ -158,7 +193,7 @@ private:
             {
                 Token token { TokenType::Id, std::move(value) };
                 m_wordsTable.insert({token.value, token});
-                result.push_back(token);
+                result.push_back(std::move(token));
             }
             else
             {
@@ -169,12 +204,64 @@ private:
         return false;
     }
     
+    //不涉及语法处理, 其中!=匹配失败直接返回false
+    [[nodiscard]]
+    bool opr(std::vector<Token>& result)
+    {
+        //如果后续匹配到'='返回true, 其他情况返回false
+        auto check_post = [&, this](){
+            if (++m_pos == m_input.size())
+                return false;
+            if (m_input[m_pos] == '=')
+            {
+                ++m_pos;
+                return true;
+            }
+            return false;
+        };
+
+        const size_t beg = m_pos;
+        switch (m_input[beg])
+        {
+        case '<':
+            check_post();
+            result.emplace_back(TokenType::Operator,
+                std::string { m_input.cbegin() + beg, m_input.cbegin() + m_pos });
+            return true;
+        case '>':
+            check_post();
+            result.emplace_back(TokenType::Operator,
+                std::string { m_input.cbegin() + beg, m_input.cbegin() + m_pos });
+            return true;
+        case '=':
+            if (check_post())
+            {
+                result.emplace_back(TokenType::Operator,
+                    std::string { m_input.cbegin() + beg, m_input.cbegin() + m_pos });
+                return true;
+            }
+            else 
+                return false;
+        case '!':
+            if (check_post())
+            {
+                result.emplace_back(TokenType::Operator,
+                    std::string { m_input.cbegin() + beg, m_input.cbegin() + m_pos });
+                return true;
+            }
+            else 
+                return false;
+        default:
+            return false;
+        }
+    }
+    
     void initial_keyword()
     {
        // m_wordsTable["true"] = Words{ TokenType::True, "true" };
         std::array wordsList {
-            Token { TokenType::KeyWord, "true"s },
-            Token { TokenType::KeyWord, "false"s },
+            Token { TokenType::KeyWord, "true" },
+            Token { TokenType::KeyWord, "false" },
         };
 
         for (const auto& words: wordsList)
@@ -203,7 +290,7 @@ int main()
 
     for (const auto& x : *ret)
     {
-        std::println("< {}, {} >", token_type_to_str(x.type), x.value);
+        std::println("< {}, `{}` >", token_type_to_str(x.type), x.value);
     }
 }
 
