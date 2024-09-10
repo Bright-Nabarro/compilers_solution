@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include <gtest/gtest.h>
 #include "syntax_tree.hpp"
 
@@ -505,6 +506,66 @@ TEST_F(TestSyntaxTree, test_parse)
 		ASSERT_FALSE(ret);
 	}
 }	
+
+TEST_F(TestSyntaxTree, test_parse_regex)
+{
+	{
+		SyntaxTree tree{};
+		auto ret = tree.parse_regex("");
+		ASSERT_TRUE(ret);
+		auto& root = tree.m_root;
+		ASSERT_NE(root, nullptr);
+		EXPECT_EQ(root->nodeType, SyntaxTree::Node::CAT);
+		auto& left = root->leftChild;
+		auto& right = root->rightChild;
+		EXPECT_EQ(left, nullptr);
+		EXPECT_NE(right, nullptr);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::END);
+		EXPECT_EQ(right->leavePtr->chr, '#');
+		EXPECT_EQ(right->leavePtr->idx, 0);
+	}
+	{
+		SyntaxTree tree{};
+		auto ret = tree.parse_regex("a");
+		ASSERT_TRUE(ret);
+		auto& root = tree.m_root;
+		ASSERT_NE(root, nullptr);
+		EXPECT_EQ(root->nodeType, SyntaxTree::Node::CAT);
+		auto& left = root->leftChild;
+		auto& right = root->rightChild;
+		EXPECT_NE(left, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+		EXPECT_NE(right, nullptr);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::END);
+		EXPECT_EQ(right->leavePtr->chr, '#');
+		EXPECT_EQ(right->leavePtr->idx, 1);
+
+	}
+}
+
+TEST_F(TestSyntaxTree, test_display)
+{
+	std::ofstream outfile{"display.out", std::ios::ate};
+	if (!outfile.good())
+		throw std::runtime_error("cannot open outfile");
+
+	auto args = std::vector<std::string> {
+		"",
+		"a",
+		"abc",
+		"(a|b)a*",
+		"(lin)*17*(bright|n)",
+	};
+	for (const auto& arg: args)
+	{
+		SyntaxTree tree{};
+		auto ret = tree.parse_regex(arg);
+		ASSERT_TRUE(ret);
+		tree.display(outfile);
+	}
+}
 
 } //namespace reg_test
   

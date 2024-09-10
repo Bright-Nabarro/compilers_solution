@@ -1,20 +1,92 @@
 #include "syntax_tree.hpp"
 #include <format>
 #include <cassert>
+#include <print>
 
 namespace simple_regex
 {
 
-auto SyntaxTree::prase_regex(std::string_view sv)
+auto SyntaxTree::parse_regex(std::string_view sv)
 	-> tl::expected<void, std::string>
 {
+	reset();
 	auto ret = parse(sv);
 	if (!ret)
 		return tl::make_unexpected( ret.error() );
-	m_root = std::move(*ret);
-	
+	//在根的左子树添加#
+	m_root = std::make_unique<Node>(SyntaxTree::Node::CAT, std::move(*ret),
+		std::make_unique<Node>(SyntaxTree::Node::END, '#', m_leavesCounter++));
 	return {};
 }
+
+void SyntaxTree::display(std::ostream& os) const
+{
+	std::println(os, "``` graphviz");
+	std::println(os, "digraph SyntaxTree{} {{", reinterpret_cast<const void*>(this));
+	std::println(os, "node [shape=plaintext]");
+
+	if (m_root != nullptr)
+	{
+		auto rootStr = nodeType2string(m_root);
+		std::println(os, R"("{}" [label = "{}"])", rootStr.value().first, rootStr.value().second);
+		display(os, m_root, rootStr.value().first);
+	}
+	std::println(os, "}}");
+	std::println(os, "```\n");
+}
+
+void SyntaxTree::display(std::ostream& os, const std::unique_ptr<Node>& ptr,
+	const std::string& ptrStr) const
+{
+	auto left = nodeType2string(ptr->leftChild);
+	auto right = nodeType2string(ptr->rightChild);
+
+	if (left)
+	{
+		std::println(os, R"("{}" -> "{}")", ptrStr, left.value().first);
+		std::println(os, R"("{}" [label = "{}"])", left.value().first, left.value().second);
+	}
+	if (right)
+	{
+		std::println(os, R"("{}" -> "{}")", ptrStr, right.value().first);
+		std::println(os, R"("{}" [label = "{}"])", right.value().first, right.value().second);
+	}
+
+	if (left)
+	{
+		display(os, ptr->leftChild, left.value().first);
+	}
+	if (right)
+	{
+		display(os, ptr->rightChild, right.value().first);
+	}
+}
+
+auto SyntaxTree::nodeType2string(const std::unique_ptr<Node>& ptr) const ->
+	std::optional<std::pair<std::string, std::string>>
+{
+	if (ptr == nullptr)
+		return std::nullopt;
+
+	switch(ptr->nodeType)
+	{
+	case Node::CAT:
+		return std::pair{std::format("cat{}", displayContext.catCounter++), "•"};
+	case Node::OR:
+		return std::pair{std::format("or{}", displayContext.orCounter++), "|"};
+	case Node::STAR:
+		return std::pair{std::format("star{}", displayContext.starCounter++), "*"};
+	case Node::END:
+	case Node::LEAVE: {
+		std::string leaveStr = std::format("{} {}", ptr->leavePtr->chr, ptr->leavePtr->idx);
+		return std::pair{leaveStr, leaveStr};
+	}
+	default:
+		throw std::invalid_argument(std::format("unkown node type {}",
+				static_cast<int>(ptr->nodeType)));
+	}
+}
+
 
 auto SyntaxTree::parse(std::string_view sv)
 	-> tl::expected<std::unique_ptr<Node>, std::string>
@@ -194,6 +266,14 @@ auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx) const
 	}
 
 	return i;
+}
+
+void SyntaxTree::reset()
+{
+	m_root = nullptr;
+	m_symbol2idx.clear();
+	m_idx2symbol.clear();
+	m_leavesCounter = 0;
 }
 
 } // namespace simple_regex

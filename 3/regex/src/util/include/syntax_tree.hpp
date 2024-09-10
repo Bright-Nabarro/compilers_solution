@@ -20,8 +20,8 @@ public:
 	virtual ~SyntaxTree() = default;
 
 	SyntaxTree() : m_root { nullptr }{};
-	[[nodiscard]]
-	tl::expected<void, std::string> prase_regex(std::string_view sv);
+	[[nodiscard]]	//每次调用重置内部状态
+	tl::expected<void, std::string> parse_regex(std::string_view sv);
 	void display(std::ostream& os) const;
 	
 private:
@@ -48,7 +48,7 @@ private:
 			leftChild { std::move(left) },
 			rightChild { std::move(right) }
 		{
-			[[unlikely]] if (nodeType == LEAVE)
+			if (nodeType == LEAVE || nodeType == END) [[unlikely]] 
 				throw std::invalid_argument {
 					"LEAVE nodeType must specify idx and char"
 				};
@@ -59,7 +59,7 @@ private:
 			nodeType { type }, leavePtr { std::make_unique<Leave>(idx, chr) },
 			leftChild { std::move(left) }, rightChild { std::move(right) }
 		{
-			[[unlikely]] if (nodeType != LEAVE)
+			if (nodeType != LEAVE && nodeType != END) [[unlikely]]
 				throw std::invalid_argument {
 					"NodeType that are not LEAVE cannot initial with idx and chr"
 				};
@@ -68,17 +68,28 @@ private:
 
 	[[nodiscard]]
 	auto parse(std::string_view sv)
-		-> tl::expected<std::unique_ptr<Node>, std::string> ;
+		-> tl::expected<std::unique_ptr<Node>, std::string>;
 	[[nodiscard]]	//parse递归辅助函数
 	auto parse_cat(std::string_view sv, size_t leftBeg, size_t leftLen,
 		size_t rightBeg, size_t rightLen, Node::NodeType type)
-		-> tl::expected<std::unique_ptr<Node>, std::string> ;
-
+		-> tl::expected<std::unique_ptr<Node>, std::string>;
 	[[nodiscard]]	//正常返回匹配括号的后一个字符
 	auto pattern_pth(std::string_view sv, size_t idx) const
 		-> tl::expected<size_t, std::string>;
+
+	void reset();
 	
 private:
+	mutable struct
+	{
+		size_t catCounter = 0;
+		size_t orCounter = 0;
+		size_t starCounter = 0;
+	} displayContext;
+	void display(std::ostream& os, const std::unique_ptr<Node>& ptr,
+			const std::string& ptrStr) const;
+	auto nodeType2string(const std::unique_ptr<Node>& ptr) const ->
+		std::optional<std::pair<std::string, std::string>>;
 	std::unique_ptr<Node> m_root;
 	//记录每个符号对应编号
 	std::unordered_map<char, std::vector<size_t>> m_symbol2idx;
@@ -90,6 +101,7 @@ private:
 	friend class TestSyntaxTree;
 	FRIEND_TEST(TestSyntaxTree, test_parse);
 	FRIEND_TEST(TestSyntaxTree, test_pattern_pth);
+	FRIEND_TEST(TestSyntaxTree, test_parse_regex);
 #endif
 };
 
