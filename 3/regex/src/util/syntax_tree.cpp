@@ -30,7 +30,7 @@ auto SyntaxTree::parse(std::string_view sv)
 	ssize_t starIdx = -1, orIdx = -1, catIdx = -1;
 	//注意：转义字符和括号表达式指向其最后一个字符
 	size_t preSymbol = std::numeric_limits<ssize_t>::max();
-	for (size_t idx = 0; idx < sv.length() && orIdx < 0; )
+	for (size_t idx = 0; idx < sv.length(); )
 	{
 		switch(sv[idx])
 		{
@@ -73,7 +73,7 @@ auto SyntaxTree::parse(std::string_view sv)
 				catIdx = idx;
 			idx = *ret;
 			preSymbol = idx-1;
-			break;
+			continue;
 		}
 
 		case ')':
@@ -83,6 +83,11 @@ auto SyntaxTree::parse(std::string_view sv)
 			break;
 
 		case '*':
+			if (preSymbol != idx-1)
+				return tl::make_unexpected(
+					std::format("Control character * in pos {} must follow with a normal symbol",
+						idx)
+				);
 			if (starIdx < 0)
 				starIdx = idx;
 			break;
@@ -90,9 +95,10 @@ auto SyntaxTree::parse(std::string_view sv)
 		case '|':
 			if (idx == 0 || idx == sv.length() -1)
 				return tl::make_unexpected(
-					std::format("symbol | in pos {} with an empty expr", idx)
+					std::format("Control character | in pos {} with an empty expr", idx)
 				);
-			orIdx = idx;
+			if (orIdx < 0)
+				orIdx = idx;
 			break;
 			
 		//普通字符

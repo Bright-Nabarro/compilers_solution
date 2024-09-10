@@ -78,7 +78,9 @@ TEST_F(TestSyntaxTree, test_pattern_pth)
 
 TEST_F(TestSyntaxTree, test_parse)
 {
-	//正常情况
+	/*
+	 * 正常情况========================================================================================================
+	 */
 	{
 		simple_regex::SyntaxTree tree{};
 		auto normalRet0 = tree.parse("");
@@ -208,7 +210,301 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
 		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("((a)(b))");
+		ASSERT_TRUE(ret);
+		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::CAT);
+		auto& pret = *ret;
+		auto& left = (*ret)->leftChild;
+		auto& right = (*ret)->rightChild;
+		ASSERT_EQ(pret->leavePtr, nullptr);
+		ASSERT_NE(pret->leftChild, nullptr);
+		ASSERT_NE(pret->rightChild, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(left->leavePtr, nullptr);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(right->leavePtr, nullptr);
+		EXPECT_EQ(right->leavePtr->chr, 'b');	
+		EXPECT_EQ(right->leavePtr->idx, 1);
+	}
+	{	
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a|b)");
+		ASSERT_TRUE(ret);
+		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::OR);
+		auto& pret = *ret;
+		auto& left = (*ret)->leftChild;
+		auto& right = (*ret)->rightChild;
+		ASSERT_EQ(pret->leavePtr, nullptr);
+		ASSERT_NE(pret->leftChild, nullptr);
+		ASSERT_NE(pret->rightChild, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(left->leavePtr, nullptr);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(right->leavePtr, nullptr);
+		EXPECT_EQ(right->leavePtr->chr, 'b');	
+		EXPECT_EQ(right->leavePtr->idx, 1);
+	}
+	{	
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a)|(b)");
+		ASSERT_TRUE(ret);
+		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::OR);
+		auto& pret = *ret;
+		auto& left = (*ret)->leftChild;
+		auto& right = (*ret)->rightChild;
+		ASSERT_EQ(pret->leavePtr, nullptr);
+		ASSERT_NE(pret->leftChild, nullptr);
+		ASSERT_NE(pret->rightChild, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(left->leavePtr, nullptr);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(right->leavePtr, nullptr);
+		EXPECT_EQ(right->leavePtr->chr, 'b');	
+		EXPECT_EQ(right->leavePtr->idx, 1);
+	}
+	{	
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a)|(b)");
+		ASSERT_TRUE(ret);
+		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::OR);
+		auto& pret = *ret;
+		auto& left = (*ret)->leftChild;
+		auto& right = (*ret)->rightChild;
+		ASSERT_EQ(pret->leavePtr, nullptr);
+		ASSERT_NE(pret->leftChild, nullptr);
+		ASSERT_NE(pret->rightChild, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(left->leavePtr, nullptr);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(right->leavePtr, nullptr);
+		EXPECT_EQ(right->leavePtr->chr, 'b');	
+		EXPECT_EQ(right->leavePtr->idx, 1);
+	}
+	{	
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a)*");
+		ASSERT_TRUE(ret);
+		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::STAR);
+		auto& pret = *ret;
+		auto& left = (*ret)->leftChild;
+		auto& right = (*ret)->rightChild;
+		ASSERT_EQ(pret->leavePtr, nullptr);
+		ASSERT_NE(left, nullptr);
+		ASSERT_EQ(right, nullptr);
+		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+		ASSERT_NE(left->leavePtr, nullptr);
+		EXPECT_EQ(left->leavePtr->chr, 'a');
+		EXPECT_EQ(left->leavePtr->idx, 0);
+	}
 
+	//测试转译符号
+	for (char x : {'*', '|', '(', ')', '\\'})
+	{
+		std::string expr{"\\"};
+		expr += x;
+
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse(expr);
+		ASSERT_TRUE(ret);
+		ASSERT_EQ((*ret)->nodeType, SyntaxTree::Node::LEAVE);
+		auto& pret = *ret;
+		EXPECT_NE(pret->leavePtr, nullptr);
+		EXPECT_EQ(pret->leavePtr->chr, x);
+		EXPECT_EQ(pret->leavePtr->idx, 0);
+	}
+
+	//综合测试
+	{
+	    simple_regex::SyntaxTree tree{};
+	    auto ret = tree.parse("(a|b)*");
+	    ASSERT_TRUE(ret);
+	    EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::STAR);
+	    auto& pret = *ret;
+	    auto& left = (*ret)->leftChild;
+	    ASSERT_EQ(pret->leavePtr, nullptr);
+	    ASSERT_NE(left, nullptr);
+	    
+	    EXPECT_EQ(left->nodeType, SyntaxTree::Node::OR);
+	    auto& left_left = left->leftChild;
+	    auto& left_right = left->rightChild;
+	    
+	    ASSERT_NE(left_left, nullptr);
+	    ASSERT_NE(left_right, nullptr);
+	    EXPECT_EQ(left_left->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_left->leavePtr->chr, 'a');
+	    EXPECT_EQ(left_left->leavePtr->idx, 0);
+	
+	    EXPECT_EQ(left_right->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_right->leavePtr->chr, 'b');
+	    EXPECT_EQ(left_right->leavePtr->idx, 1);
+	}
+	{
+    	simple_regex::SyntaxTree tree{};
+	    auto ret = tree.parse("((a)(b))*");
+	    ASSERT_TRUE(ret);
+	    EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::STAR);
+	    auto& pret = *ret;
+	    auto& left = (*ret)->leftChild;
+	    
+	    ASSERT_EQ(pret->leavePtr, nullptr);
+	    ASSERT_NE(left, nullptr);
+	    
+	    EXPECT_EQ(left->nodeType, SyntaxTree::Node::CAT);
+	    
+	    auto& left_left = left->leftChild;
+	    auto& left_right = left->rightChild;
+	    
+	    ASSERT_NE(left_left, nullptr);
+	    ASSERT_NE(left_right, nullptr);
+	    
+	    EXPECT_EQ(left_left->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_left->leavePtr->chr, 'a');
+	    EXPECT_EQ(left_left->leavePtr->idx, 0);
+	    
+	    EXPECT_EQ(left_right->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_right->leavePtr->chr, 'b');
+	    EXPECT_EQ(left_right->leavePtr->idx, 1);
+	}
+	
+	{
+	    simple_regex::SyntaxTree tree{};
+	    auto ret = tree.parse("(a|(b|(c|d)))");
+	    ASSERT_TRUE(ret);
+	    EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::OR);
+	    auto& pret = *ret;
+	    auto& left = (*ret)->leftChild;
+	    auto& right = (*ret)->rightChild;
+	    
+	    ASSERT_EQ(pret->leavePtr, nullptr);
+	    ASSERT_NE(left, nullptr);
+	    ASSERT_NE(right, nullptr);
+	    
+	    EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left->leavePtr->chr, 'a');
+	    EXPECT_EQ(left->leavePtr->idx, 0);
+	
+	    EXPECT_EQ(right->nodeType, SyntaxTree::Node::OR);
+	    
+	    auto& right_left = right->leftChild;
+	    auto& right_right = right->rightChild;
+	    
+	    EXPECT_EQ(right_left->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(right_left->leavePtr->chr, 'b');
+	    EXPECT_EQ(right_left->leavePtr->idx, 1);
+	    
+	    EXPECT_EQ(right_right->nodeType, SyntaxTree::Node::OR);
+	    
+	    auto& right_right_left = right_right->leftChild;
+	    auto& right_right_right = right_right->rightChild;
+	    
+	    EXPECT_EQ(right_right_left->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(right_right_left->leavePtr->chr, 'c');
+	    EXPECT_EQ(right_right_left->leavePtr->idx, 2);
+	    
+	    EXPECT_EQ(right_right_right->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(right_right_right->leavePtr->chr, 'd');
+	    EXPECT_EQ(right_right_right->leavePtr->idx, 3);
+	}
+	
+	{
+	    simple_regex::SyntaxTree tree{};
+	    auto ret = tree.parse("((a|b)c)*");
+	    ASSERT_TRUE(ret);
+	    EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::STAR);
+	    auto& pret = *ret;
+	    auto& left = (*ret)->leftChild;
+	    
+	    ASSERT_EQ(pret->leavePtr, nullptr);
+	    ASSERT_NE(left, nullptr);
+	    
+	    EXPECT_EQ(left->nodeType, SyntaxTree::Node::CAT);
+	    
+	    auto& left_left = left->leftChild;
+	    auto& left_right = left->rightChild;
+	    
+	    ASSERT_NE(left_left, nullptr);
+	    ASSERT_NE(left_right, nullptr);
+	    
+	    EXPECT_EQ(left_left->nodeType, SyntaxTree::Node::OR);
+	    EXPECT_EQ(left_left->leftChild->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_left->leftChild->leavePtr->chr, 'a');
+	    EXPECT_EQ(left_left->rightChild->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_left->rightChild->leavePtr->chr, 'b');
+	    
+	    EXPECT_EQ(left_right->nodeType, SyntaxTree::Node::LEAVE);
+	    EXPECT_EQ(left_right->leavePtr->chr, 'c');
+	}
+
+	/*
+	 * 异常========================================================================================================
+	 */
+	
+	//转义字符异常
+	{
+	    simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("\\a");	
+		ASSERT_FALSE(ret);
+	}
+	{
+	    simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("aaa\\");	
+		ASSERT_FALSE(ret);
+	}
+
+	//括号不匹配异常
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("())");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(sfsf)(fda");
+		ASSERT_FALSE(ret);
+	}
+	
+	// | 跟随空字符异常
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("|");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("a|");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a|)");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a|*)");
+		ASSERT_FALSE(ret);
+	}
+	{
+		simple_regex::SyntaxTree tree{};
+		auto ret = tree.parse("(a|)a|a");
+		ASSERT_FALSE(ret);
+	}
 }	
 
 } //namespace reg_test
+  
