@@ -8,9 +8,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (ENABLE_RELEASE)
 	set(CMAKE_BUILD_TYPE Release)
 	add_compile_definitions(NDEBUG)
+	
 else()
 	set(CMAKE_BUILD_TYPE Debug)
 	add_compile_definitions(DEBUG)
+	add_compile_options(
+		-O0
+		-g
+	)
 endif()
 
 add_compile_options(

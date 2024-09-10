@@ -21,7 +21,6 @@ auto SyntaxTree::parse(std::string_view sv)
 {
 	//需要在前添加转译字符的字符集
 	static constexpr char charSet[] = {'*', '|', '(', ')', '\\'};
-	static size_t leavesCounter = 0;
 
 	if (sv.length() == 0)
 		return nullptr;
@@ -66,6 +65,8 @@ auto SyntaxTree::parse(std::string_view sv)
 			if (idx == 0 && *ret == sv.length())
 			{
 				sv = sv.substr(1, sv.length()-2);
+				if (sv.length() == 0)
+					return nullptr;
 				continue;
 			}
 			if (catIdx < 0 && preSymbol == idx-1)
@@ -88,9 +89,10 @@ auto SyntaxTree::parse(std::string_view sv)
 
 		case '|':
 			if (idx == 0 || idx == sv.length() -1)
-							
-			if (orIdx < 0)
-				orIdx = idx;
+				return tl::make_unexpected(
+					std::format("symbol | in pos {} with an empty expr", idx)
+				);
+			orIdx = idx;
 			break;
 			
 		//普通字符
@@ -105,21 +107,11 @@ auto SyntaxTree::parse(std::string_view sv)
 		idx++;
 	}
 
-	const auto recursive = [this, &sv](size_t leftBeg, size_t leftLen,
-		size_t rightBeg, size_t rightLen, Node::NodeType type)
-		-> tl::expected<std::unique_ptr<Node>, std::string> {
-		auto left = parse(sv.substr(leftBeg, leftLen));
-		if (!left) return tl::make_unexpected(left.error());
-		auto right = parse(sv.substr(rightBeg, rightLen));
-		if (!right) return tl::make_unexpected(right.error());
-
-		return std::make_unique<Node>(type, std::move(*left), std::move(*right));
-	};
-
 	if (orIdx > 0)
 	{
-		auto ret = recursive(0, orIdx, orIdx+1, sv.length()-orIdx-1, Node::OR);
-		if (*ret)
+		assert(sv.length()-orIdx-1 < sv.length());
+		auto ret = parse_cat(sv, 0, orIdx, orIdx+1, sv.length()-orIdx-1, Node::OR);
+		if (!ret)
 			return tl::make_unexpected(ret.error());
 		//为了隐式转换成tl::expected, 这里用std::move转换成右值是必须的
 		return std::move(*ret);
@@ -127,34 +119,48 @@ auto SyntaxTree::parse(std::string_view sv)
 
 	if (catIdx > 0)
 	{
-		auto ret = recursive(0, orIdx, orIdx, sv.length() - orIdx, Node::CAT);
-		if (*ret)
+		assert(sv.length()-catIdx < sv.length());
+		auto ret = parse_cat(sv, 0, catIdx, catIdx, sv.length() - catIdx, Node::CAT);
+		if (!ret)
 			return tl::make_unexpected(ret.error());
 		return std::move(*ret);
 	}
 	
 	if (starIdx > 0)
 	{
-		auto ret = recursive(0, orIdx, orIdx+1, sv.length()-orIdx-1, Node::STAR);
-		if (*ret)
+		assert(sv.length()-starIdx-1 < sv.length());
+		auto ret = parse_cat(sv, 0, starIdx, starIdx+1, sv.length()-starIdx-1, Node::STAR);
+		if (!ret)
 			return tl::make_unexpected(ret.error());
 		return std::move(*ret);
 	}
 	
-	if (preSymbol >= sv.length())
+	if (preSymbol >= sv.length()) [[unlikely]]
 	{
 		throw std::logic_error { "No symbols were caught" };
 	}
 
-	m_symbol2idx[sv[preSymbol]].push_back(leavesCounter);
+	m_symbol2idx[sv[preSymbol]].push_back(m_leavesCounter);
 	//只有单个符号时会达到此分支
-	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol], leavesCounter);
-	leavesCounter++;
+	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol], m_leavesCounter);
+	m_leavesCounter++;
 
 	return ret;
 }
 
-auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx)
+auto SyntaxTree::parse_cat(std::string_view sv, size_t leftBeg, size_t leftLen,
+	size_t rightBeg, size_t rightLen, Node::NodeType type)
+		-> tl::expected<std::unique_ptr<Node>, std::string>
+{
+	auto left = parse(sv.substr(leftBeg, leftLen));
+	if (!left) return tl::make_unexpected(left.error());
+	auto right = parse(sv.substr(rightBeg, rightLen));
+	if (!right) return tl::make_unexpected(right.error());
+
+	return std::make_unique<Node>(type, std::move(*left), std::move(*right));
+}
+
+auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx) const
 		-> tl::expected<size_t, std::string>
 {
 	ssize_t pthCounter = 1;

@@ -43,7 +43,9 @@ private:
 
 		Node(NodeType type, std::unique_ptr<Node> left = nullptr,
 			 std::unique_ptr<Node> right = nullptr):
-			nodeType { type }, leavePtr { nullptr }, leftChild { std::move(left) },
+			nodeType { type },
+			leavePtr { nullptr }, 
+			leftChild { std::move(left) },
 			rightChild { std::move(right) }
 		{
 			[[unlikely]] if (nodeType == LEAVE)
@@ -52,7 +54,7 @@ private:
 				};
 		}
 
-		Node(NodeType type, size_t idx, char chr, std::unique_ptr<Node> left = nullptr,
+		Node(NodeType type, char chr, size_t idx, std::unique_ptr<Node> left = nullptr,
 			 std::unique_ptr<Node> right = nullptr):
 			nodeType { type }, leavePtr { std::make_unique<Leave>(idx, chr) },
 			leftChild { std::move(left) }, rightChild { std::move(right) }
@@ -67,16 +69,22 @@ private:
 	[[nodiscard]]
 	auto parse(std::string_view sv)
 		-> tl::expected<std::unique_ptr<Node>, std::string> ;
-	[[nodiscard]]	//正常返回匹配括号的后一个字符
-	auto pattern_pth(std::string_view sv, size_t idx)
-		-> tl::expected<size_t, std::string>;
+	[[nodiscard]]	//parse递归辅助函数
+	auto parse_cat(std::string_view sv, size_t leftBeg, size_t leftLen,
+		size_t rightBeg, size_t rightLen, Node::NodeType type)
+		-> tl::expected<std::unique_ptr<Node>, std::string> ;
 
+	[[nodiscard]]	//正常返回匹配括号的后一个字符
+	auto pattern_pth(std::string_view sv, size_t idx) const
+		-> tl::expected<size_t, std::string>;
+	
 private:
 	std::unique_ptr<Node> m_root;
 	//记录每个符号对应编号
 	std::unordered_map<char, std::vector<size_t>> m_symbol2idx;
 	//记录每个叶子编号对应的字符
 	std::unordered_map<size_t, char> m_idx2symbol;
+	size_t m_leavesCounter = 0;
 
 #ifdef DEBUG
 	friend class TestSyntaxTree;
