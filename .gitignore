@@ -4,3 +4,8 @@ build/
 output
 output.*
 lex.yy.c
+bin/*
+.cache/
+compile_commands.json
+lib/*
+*.a
