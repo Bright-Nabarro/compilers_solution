@@ -13,6 +13,8 @@ auto SyntaxTree::parse_regex(std::string_view sv)
 	auto ret = parse(sv);
 	if (!ret)
 		return tl::make_unexpected( ret.error() );
+	if (*ret == nullptr)
+		return {};
 	//在根的左子树添加#
 	m_root = std::make_unique<Node>(SyntaxTree::Node::CAT, std::move(*ret),
 		std::make_unique<Node>(SyntaxTree::Node::END, '#'));

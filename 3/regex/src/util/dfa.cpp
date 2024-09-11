@@ -6,6 +6,9 @@ namespace simple_regex
 void DFA::create_graph(SyntaxTree&& tree)
 {
 	m_tree = std::move(tree);
+	if (m_tree.m_root == nullptr)
+		return;
+
 	cal_nullable(m_tree.m_root);
 	//firstpos
 	cal_flpos<true>(m_tree.m_root);
@@ -67,22 +70,25 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 	if (uptr->rightChild != nullptr)
 		cal_flpos<isFirst>(uptr->rightChild);
 
+	std::unordered_map<puptr_t, std::unordered_set<puptr_t>>* dealMap;
+	if constexpr (isFirst)
+		dealMap = &m_firstpos;
+	else
+		dealMap = &m_lastpos;
+
 	switch(uptr->nodeType)
 	{
 	case SyntaxTree::Node::CAT: {
 		puptr_t c1, c2;
-		std::unordered_map<puptr_t, std::unordered_set<puptr_t>>* dealMap;
 		if constexpr (isFirst)
 		{
 			c1 = &uptr->leftChild;
 			c2 = &uptr->rightChild;
-			dealMap = &m_firstpos;
 		}
 		else
 		{
 			c1 = &uptr->rightChild;
 			c2 = &uptr->leftChild;
-			dealMap = &m_lastpos;
 		}
 
 		auto nullableItr = check_and_get_table_elements(&uptr, m_nullable);
@@ -98,20 +104,37 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 		else
 		{
 			auto retItr = check_and_get_table_elements(c1, m_firstpos);
-			assert(dealMap->contains(&uptr));
+			assert(!dealMap->contains(&uptr));
 			dealMap->insert({&uptr, retItr->second});
 		}
 
 		return;
 	}
-	case SyntaxTree::Node::OR:
-
+	case SyntaxTree::Node::OR:{
+		assert(uptr->leftChild != nullptr);
+		assert(uptr->rightChild != nullptr);
+		auto leftItr =
+			check_and_get_table_elements(&uptr->leftChild, m_firstpos);
+		auto rightItr =
+			check_and_get_table_elements(&uptr->rightChild, m_firstpos);
+		auto dealSet = leftItr->second;
+		dealSet.insert(rightItr->second.cbegin(), rightItr->second.cend());
+		dealMap->insert({&uptr, std::move(dealSet)});
 		return;
-	case SyntaxTree::Node::STAR:
+	}
+	case SyntaxTree::Node::STAR: {
+		assert(uptr->leftChild != nullptr);
+		auto dealItr =
+			check_and_get_table_elements(&uptr->leftChild, m_firstpos);
+		dealMap->insert({&uptr, dealItr->second});
 		return;
+	}
 	case SyntaxTree::Node::LEAVE:
-	case SyntaxTree::Node::END:
+	case SyntaxTree::Node::END: {
+		assert(!dealMap->contains(&uptr));
+		dealMap->insert({&uptr, std::unordered_set{&uptr}});
 		return;
+	}
 	default:
 		throw std::logic_error {
 			std::format("expected node type {}", static_cast<int>(uptr->nodeType))

@@ -489,14 +489,7 @@ TEST_F(TestSyntaxTree, test_parse_regex)
 		auto ret = tree.parse_regex("");
 		ASSERT_TRUE(ret);
 		auto& root = tree.m_root;
-		ASSERT_NE(root, nullptr);
-		EXPECT_EQ(root->nodeType, SyntaxTree::Node::CAT);
-		auto& left = root->leftChild;
-		auto& right = root->rightChild;
-		EXPECT_EQ(left, nullptr);
-		EXPECT_NE(right, nullptr);
-		EXPECT_EQ(right->nodeType, SyntaxTree::Node::END);
-		EXPECT_EQ(right->leavePtr->chr, '#');
+		ASSERT_EQ(root, nullptr);
 	}
 	{
 		SyntaxTree tree{};
