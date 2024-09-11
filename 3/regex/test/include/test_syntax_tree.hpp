@@ -98,7 +98,6 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ((*normalRet1)->leftChild, nullptr);
 		EXPECT_EQ((*normalRet1)->rightChild, nullptr);
 		EXPECT_EQ((*normalRet1)->leavePtr->chr, 'a');
-		EXPECT_EQ((*normalRet1)->leavePtr->idx, 0);
 	}
 	
 	//验证基础情况
@@ -154,7 +153,6 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 	}
 	// 测试括号综合情况
 	{
@@ -169,7 +167,6 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ((*ret)->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE((*ret)->leavePtr, nullptr);
 		EXPECT_EQ((*ret)->leavePtr->chr, 'a');
-		EXPECT_EQ((*ret)->leavePtr->idx, 0);
 	}
 	{
 		simple_regex::SyntaxTree tree{};
@@ -185,11 +182,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{
 		simple_regex::SyntaxTree tree{};
@@ -205,11 +200,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{
 		simple_regex::SyntaxTree tree{};
@@ -225,11 +218,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{	
 		simple_regex::SyntaxTree tree{};
@@ -245,11 +236,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{	
 		simple_regex::SyntaxTree tree{};
@@ -265,11 +254,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{	
 		simple_regex::SyntaxTree tree{};
@@ -285,11 +272,9 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(right->leavePtr, nullptr);
 		EXPECT_EQ(right->leavePtr->chr, 'b');	
-		EXPECT_EQ(right->leavePtr->idx, 1);
 	}
 	{	
 		simple_regex::SyntaxTree tree{};
@@ -305,7 +290,6 @@ TEST_F(TestSyntaxTree, test_parse)
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		ASSERT_NE(left->leavePtr, nullptr);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 	}
 
 	//测试转译符号
@@ -321,7 +305,6 @@ TEST_F(TestSyntaxTree, test_parse)
 		auto& pret = *ret;
 		EXPECT_NE(pret->leavePtr, nullptr);
 		EXPECT_EQ(pret->leavePtr->chr, x);
-		EXPECT_EQ(pret->leavePtr->idx, 0);
 	}
 
 	//综合测试
@@ -343,11 +326,9 @@ TEST_F(TestSyntaxTree, test_parse)
 	    ASSERT_NE(left_right, nullptr);
 	    EXPECT_EQ(left_left->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(left_left->leavePtr->chr, 'a');
-	    EXPECT_EQ(left_left->leavePtr->idx, 0);
 	
 	    EXPECT_EQ(left_right->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(left_right->leavePtr->chr, 'b');
-	    EXPECT_EQ(left_right->leavePtr->idx, 1);
 	}
 	{
     	simple_regex::SyntaxTree tree{};
@@ -370,11 +351,9 @@ TEST_F(TestSyntaxTree, test_parse)
 	    
 	    EXPECT_EQ(left_left->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(left_left->leavePtr->chr, 'a');
-	    EXPECT_EQ(left_left->leavePtr->idx, 0);
 	    
 	    EXPECT_EQ(left_right->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(left_right->leavePtr->chr, 'b');
-	    EXPECT_EQ(left_right->leavePtr->idx, 1);
 	}
 	
 	{
@@ -392,7 +371,6 @@ TEST_F(TestSyntaxTree, test_parse)
 	    
 	    EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(left->leavePtr->chr, 'a');
-	    EXPECT_EQ(left->leavePtr->idx, 0);
 	
 	    EXPECT_EQ(right->nodeType, SyntaxTree::Node::OR);
 	    
@@ -401,7 +379,6 @@ TEST_F(TestSyntaxTree, test_parse)
 	    
 	    EXPECT_EQ(right_left->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(right_left->leavePtr->chr, 'b');
-	    EXPECT_EQ(right_left->leavePtr->idx, 1);
 	    
 	    EXPECT_EQ(right_right->nodeType, SyntaxTree::Node::OR);
 	    
@@ -410,11 +387,9 @@ TEST_F(TestSyntaxTree, test_parse)
 	    
 	    EXPECT_EQ(right_right_left->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(right_right_left->leavePtr->chr, 'c');
-	    EXPECT_EQ(right_right_left->leavePtr->idx, 2);
 	    
 	    EXPECT_EQ(right_right_right->nodeType, SyntaxTree::Node::LEAVE);
 	    EXPECT_EQ(right_right_right->leavePtr->chr, 'd');
-	    EXPECT_EQ(right_right_right->leavePtr->idx, 3);
 	}
 	
 	{
@@ -522,7 +497,6 @@ TEST_F(TestSyntaxTree, test_parse_regex)
 		EXPECT_NE(right, nullptr);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::END);
 		EXPECT_EQ(right->leavePtr->chr, '#');
-		EXPECT_EQ(right->leavePtr->idx, 0);
 	}
 	{
 		SyntaxTree tree{};
@@ -536,18 +510,16 @@ TEST_F(TestSyntaxTree, test_parse_regex)
 		EXPECT_NE(left, nullptr);
 		EXPECT_EQ(left->nodeType, SyntaxTree::Node::LEAVE);
 		EXPECT_EQ(left->leavePtr->chr, 'a');
-		EXPECT_EQ(left->leavePtr->idx, 0);
 		EXPECT_NE(right, nullptr);
 		EXPECT_EQ(right->nodeType, SyntaxTree::Node::END);
 		EXPECT_EQ(right->leavePtr->chr, '#');
-		EXPECT_EQ(right->leavePtr->idx, 1);
 
 	}
 }
 
 TEST_F(TestSyntaxTree, test_display)
 {
-	std::ofstream outfile{"display.out", std::ios::ate};
+	std::ofstream outfile{"display.md", std::ios::ate};
 	if (!outfile.good())
 		throw std::runtime_error("cannot open outfile");
 
@@ -568,4 +540,4 @@ TEST_F(TestSyntaxTree, test_display)
 }
 
 } //namespace reg_test
-  
+

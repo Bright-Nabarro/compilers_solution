@@ -1,17 +1,19 @@
 #pragma once
+#include <gtest/gtest.h>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
 #include <tl/expected.hpp>
 #include <unordered_map>
-#include <gtest/gtest.h>
+#include <unordered_set>
 
 namespace simple_regex
 {
 
 class SyntaxTree
 {
+	friend class DFA;
 public:
 	SyntaxTree(const SyntaxTree&) = delete;
 	SyntaxTree& operator=(const SyntaxTree&) = delete;
@@ -27,7 +29,6 @@ public:
 private:
 	struct Leave
 	{
-		size_t idx;
 		char chr;
 	};
 
@@ -54,9 +55,9 @@ private:
 				};
 		}
 
-		Node(NodeType type, char chr, size_t idx, std::unique_ptr<Node> left = nullptr,
+		Node(NodeType type, char chr, std::unique_ptr<Node> left = nullptr,
 			 std::unique_ptr<Node> right = nullptr):
-			nodeType { type }, leavePtr { std::make_unique<Leave>(idx, chr) },
+			nodeType { type }, leavePtr { std::make_unique<Leave>(chr) },
 			leftChild { std::move(left) }, rightChild { std::move(right) }
 		{
 			if (nodeType != LEAVE && nodeType != END) [[unlikely]]
@@ -85,17 +86,15 @@ private:
 		size_t catCounter = 0;
 		size_t orCounter = 0;
 		size_t starCounter = 0;
+		size_t leavesCounter = 0;
 	} displayContext;
 	void display(std::ostream& os, const std::unique_ptr<Node>& ptr,
 			const std::string& ptrStr) const;
 	auto nodeType2string(const std::unique_ptr<Node>& ptr) const ->
 		std::optional<std::pair<std::string, std::string>>;
 	std::unique_ptr<Node> m_root;
-	//记录每个符号对应编号
-	std::unordered_map<char, std::vector<size_t>> m_symbol2idx;
-	//记录每个叶子编号对应的字符
-	std::unordered_map<size_t, char> m_idx2symbol;
-	size_t m_leavesCounter = 0;
+	std::unordered_set<std::unique_ptr<Node>*> m_leavesTable;
+	std::unordered_map<char, std::vector<std::unique_ptr<Node>*>> m_chrTable;
 
 #ifdef DEBUG
 	friend class TestSyntaxTree;

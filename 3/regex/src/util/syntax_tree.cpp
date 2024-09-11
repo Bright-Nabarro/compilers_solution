@@ -15,7 +15,7 @@ auto SyntaxTree::parse_regex(std::string_view sv)
 		return tl::make_unexpected( ret.error() );
 	//在根的左子树添加#
 	m_root = std::make_unique<Node>(SyntaxTree::Node::CAT, std::move(*ret),
-		std::make_unique<Node>(SyntaxTree::Node::END, '#', m_leavesCounter++));
+		std::make_unique<Node>(SyntaxTree::Node::END, '#'));
 	return {};
 }
 
@@ -78,7 +78,7 @@ auto SyntaxTree::nodeType2string(const std::unique_ptr<Node>& ptr) const ->
 		return std::pair{std::format("star{}", displayContext.starCounter++), "*"};
 	case Node::END:
 	case Node::LEAVE: {
-		std::string leaveStr = std::format("{} {}", ptr->leavePtr->chr, ptr->leavePtr->idx);
+		std::string leaveStr = std::format("{} {}", ptr->leavePtr->chr, displayContext.leavesCounter++);
 		return std::pair{leaveStr, leaveStr};
 	}
 	default:
@@ -218,10 +218,10 @@ auto SyntaxTree::parse(std::string_view sv)
 		throw std::logic_error { "No symbols were caught" };
 	}
 
-	m_symbol2idx[sv[preSymbol]].push_back(m_leavesCounter);
 	//只有单个符号时会达到此分支
-	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol], m_leavesCounter);
-	m_leavesCounter++;
+	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol]);
+	m_leavesTable.insert(&ret);
+	m_chrTable[sv[preSymbol]].push_back(&ret);
 
 	return ret;
 }
@@ -271,9 +271,7 @@ auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx) const
 void SyntaxTree::reset()
 {
 	m_root = nullptr;
-	m_symbol2idx.clear();
-	m_idx2symbol.clear();
-	m_leavesCounter = 0;
+	m_leavesTable.clear();
 }
 
 } // namespace simple_regex
