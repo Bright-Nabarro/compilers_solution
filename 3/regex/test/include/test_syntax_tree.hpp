@@ -524,6 +524,7 @@ TEST_F(TestSyntaxTree, test_display)
 		throw std::runtime_error("cannot open outfile");
 
 	auto args = std::vector<std::string> {
+		"((a|b)*abb(a|b)*)",
 		"",
 		"a",
 		"abc",
@@ -532,6 +533,7 @@ TEST_F(TestSyntaxTree, test_display)
 	};
 	for (const auto& arg: args)
 	{
+		std::println(outfile, "`{}`", arg);
 		SyntaxTree tree{};
 		auto ret = tree.parse_regex(arg);
 		ASSERT_TRUE(ret);
@@ -539,5 +541,4 @@ TEST_F(TestSyntaxTree, test_display)
 	}
 }
 
-} //namespace reg_test
-
+}	//namespace syntax_tree

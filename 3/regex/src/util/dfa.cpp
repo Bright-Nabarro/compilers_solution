@@ -5,7 +5,14 @@ namespace simple_regex
 
 void DFA::create_graph(SyntaxTree&& tree)
 {
+	m_tree = std::move(tree);
 	cal_nullable(m_tree.m_root);
+	//firstpos
+	cal_flpos<true>(m_tree.m_root);
+	//lastpos
+	cal_flpos<false>(m_tree.m_root);
+	
+	cal_followpos(m_tree.m_root);
 }
 
 void DFA::display(std::ostream& os)
@@ -78,23 +85,27 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 			dealMap = &m_lastpos;
 		}
 
-		auto nullablePtr = m_nullable.find(c1);
-		if (nullablePtr == m_nullable.end())	[[unlikely]]
-			throw std::logic_error {
-				"c1 cannot find in nullable table"
-			};
-
-		if (nullablePtr->second)
+		auto nullableItr = check_and_get_table_elements(&uptr, m_nullable);
+		// if (nullable(c_1/ c_2)
+		if (nullableItr->second)
 		{
-			auto retSet = m_firstpos[c1];
+			auto retItr = check_and_get_table_elements(c1, m_firstpos);
+			auto retSet = retItr->second;
 			const auto& tmpSet = m_firstpos[c2];
 			retSet.insert(tmpSet.cbegin(), tmpSet.cend());
 			dealMap->insert({&uptr, retSet});
+		}
+		else
+		{
+			auto retItr = check_and_get_table_elements(c1, m_firstpos);
+			assert(dealMap->contains(&uptr));
+			dealMap->insert({&uptr, retItr->second});
 		}
 
 		return;
 	}
 	case SyntaxTree::Node::OR:
+
 		return;
 	case SyntaxTree::Node::STAR:
 		return;
@@ -109,8 +120,37 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 
 }
 
-auto DFA::cal_followpos() -> std::unordered_set<puptr_t>
+auto DFA::cal_followpos(uptr_t& uptr) -> void
 {
+	auto& left = uptr->leftChild;
+	auto& right = uptr->rightChild;
+	if (left != nullptr)
+		cal_followpos(left);
+	if (right != nullptr)
+		cal_followpos(right);
+	
+	if (uptr->nodeType == SyntaxTree::Node::CAT)
+	{
+		auto lpleftItr = check_and_get_table_elements(&left, m_lastpos);
+		auto lpRightItr = check_and_get_table_elements(&right, m_lastpos);
+		const auto& lpRight = lpRightItr->second;
+		for (auto puptrLeft : lpleftItr->second)
+		{
+			auto& fp = m_followpos[puptrLeft];
+			fp.insert(lpRight.cbegin(), lpRight.cend());
+		}
+	}
+	else if (uptr->nodeType == SyntaxTree::Node::STAR)
+	{
+		auto lprtItr = check_and_get_table_elements(&uptr, m_lastpos);
+		auto fprtItr = check_and_get_table_elements(&uptr, m_firstpos);
+		const auto& fprt = fprtItr->second;
+		for (auto lpItem : lprtItr->second)
+		{
+			auto& fpSet = m_followpos[lpItem];
+			fpSet.insert(fprt.cbegin(), fprt.cend());
+		}
+	}
 }
 
 }	//namespace simple_regex

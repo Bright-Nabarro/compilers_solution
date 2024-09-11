@@ -162,6 +162,7 @@ auto SyntaxTree::parse(std::string_view sv)
 				);
 			if (starIdx < 0)
 				starIdx = idx;
+			preSymbol = idx;
 			break;
 
 		case '|':
