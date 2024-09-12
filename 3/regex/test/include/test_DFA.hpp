@@ -477,5 +477,116 @@ TEST_F(TestDFA, test_lastpos)
 	}
 }
 
+TEST_F(TestDFA, test_followpos)
+{
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("a");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		auto& root = dfa.m_tree.m_root;
+		//没有被赋值的leaves节点就不存在于followpos中
+		EXPECT_EQ(dfa.m_followpos.size(), 1);
+		auto& a = root->leftChild;
+		auto& end = root->rightChild;
+		auto& setA = dfa.m_followpos.find(&a)->second;
+		EXPECT_EQ(setA.size(), 1);
+		EXPECT_TRUE(setA.contains(&end));
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("ab");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		ASSERT_EQ(dfa.m_followpos.size(), 2);
+		auto& root = dfa.m_tree.m_root;
+		auto& end = root->rightChild;
+		auto& cat1 = root->leftChild;
+		auto& a = cat1->leftChild;
+		auto& b = cat1->rightChild;
+		auto& aSet = dfa.m_followpos.find(&a)->second;
+		EXPECT_EQ(aSet.size(), 1);
+		EXPECT_TRUE(aSet.contains(&b));
+		auto& bSet = dfa.m_followpos.find(&b)->second;
+		EXPECT_EQ(bSet.size(), 1);
+		EXPECT_TRUE(bSet.contains(&end));
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("a*");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		ASSERT_EQ(dfa.m_followpos.size(), 1);
+		auto& root = dfa.m_tree.m_root;
+		auto& end = root->rightChild;
+		auto& a = root->leftChild->leftChild;
+		auto& aSet = dfa.m_followpos.find(&a)->second;
+		EXPECT_EQ(aSet.size(), 2);
+		EXPECT_TRUE(aSet.contains(&a));
+		EXPECT_TRUE(aSet.contains(&end));
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("(a|b)*");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		auto& root = dfa.m_tree.m_root;
+		auto& end = root->rightChild;
+		ASSERT_EQ(dfa.m_followpos.size(), 2);
+		auto& or1 = root->leftChild->leftChild;
+		auto& a = or1->leftChild;
+		auto& b = or1->rightChild;
+		
+		auto& aSet = dfa.m_followpos.find(&a)->second;
+		EXPECT_EQ(aSet.size(), 3);
+		EXPECT_TRUE(aSet.contains(&a));
+		EXPECT_TRUE(aSet.contains(&b));
+		EXPECT_TRUE(aSet.contains(&end));
+		auto& bSet = dfa.m_followpos.find(&b)->second;
+		EXPECT_EQ(aSet, bSet);
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("(a|b)*cde");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		auto& root = dfa.m_tree.m_root;
+		auto& end = root->rightChild;		//6
+		EXPECT_EQ(dfa.m_followpos.size(), 5);
+		auto& cat1 = root->leftChild;
+		auto& cat2 = cat1->leftChild;
+		auto& b5 = cat1->rightChild;
+		auto& cat3 = cat2->leftChild;
+		auto& b4 = cat2->rightChild;
+		auto& star1 = cat3->leftChild;
+		auto& a3 = cat3->rightChild;
+		auto& or1 = star1->leftChild;
+		auto& a1 = or1->leftChild;
+		auto& b2 = or1->rightChild;
+		
+		auto& a1Set = dfa.m_followpos.find(&a1)->second;
+		auto& b2Set = dfa.m_followpos.find(&b2)->second;
+		EXPECT_EQ(a1Set.size(), 3);
+		EXPECT_TRUE(a1Set.contains(&a1));
+		EXPECT_TRUE(a1Set.contains(&b2));
+		EXPECT_TRUE(a1Set.contains(&a3));
+		EXPECT_EQ(b2Set, a1Set);
+
+		auto& a3Set = dfa.m_followpos.find(&a3)->second;
+		auto& b4Set = dfa.m_followpos.find(&b4)->second;
+		auto& b5Set = dfa.m_followpos.find(&b5)->second;
+		EXPECT_EQ(a3Set.size(), 1);
+		EXPECT_EQ(b4Set.size(), 1);
+		EXPECT_EQ(b5Set.size(), 1);
+		EXPECT_TRUE(a3Set.contains(&b4));
+		EXPECT_TRUE(b4Set.contains(&b5));
+		EXPECT_TRUE(b5Set.contains(&end));
+	}
+}
+
 }	//namespace simple_regex
-	

@@ -99,7 +99,7 @@ auto SyntaxTree::parse(std::string_view sv)
 	if (sv.length() == 0)
 		return nullptr;
 
-	//记录相同优先级的第一个匹配,
+	//or, cat相同优先级的最后一个匹配，保证为左结合,
 	//注意catIdx指向连接的第二各
 	ssize_t starIdx = -1, orIdx = -1, catIdx = -1;
 	//注意：转义字符和括号表达式指向其最后一个字符
@@ -123,7 +123,7 @@ auto SyntaxTree::parse(std::string_view sv)
 				);
 			}
 			//判断前一个是否为symbol项
-			if (catIdx < 0 && preSymbol == idx-1)
+			if (preSymbol == idx-1)
 			{
 				catIdx = idx;
 			}
@@ -143,7 +143,7 @@ auto SyntaxTree::parse(std::string_view sv)
 					return nullptr;
 				continue;
 			}
-			if (catIdx < 0 && preSymbol == idx-1)
+			if (preSymbol == idx-1)
 				catIdx = idx;
 			idx = *ret;
 			preSymbol = idx-1;
@@ -172,13 +172,12 @@ auto SyntaxTree::parse(std::string_view sv)
 				return tl::make_unexpected(
 					std::format("Control character | in pos {} with an empty expr", idx)
 				);
-			if (orIdx < 0)
-				orIdx = idx;
+			orIdx = idx;
 			break;
 			
 		//普通字符
 		default:
-			if (catIdx < 0 && preSymbol == idx-1)
+			if (preSymbol == idx-1)
 			{
 				catIdx = idx;
 			}

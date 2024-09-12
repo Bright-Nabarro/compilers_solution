@@ -1,5 +1,5 @@
 #include "test_syntax_tree.hpp"
-#include "test_DFA.hpp"
+//#include "test_DFA.hpp"
 
 int main(int argc, char* argv[])
 {
