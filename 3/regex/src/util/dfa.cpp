@@ -20,6 +20,7 @@ void DFA::create_graph(SyntaxTree&& tree)
 
 void DFA::display(std::ostream& os)
 {
+	(void)os;
 }
 
 auto DFA::cal_nullable(uptr_t& uptr) -> bool
@@ -91,7 +92,7 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 			c2 = &uptr->leftChild;
 		}
 
-		auto nullableItr = check_and_get_table_elements(&uptr, m_nullable);
+		auto nullableItr = check_and_get_table_elements(c1, m_nullable);
 		// if (nullable(c_1/ c_2)
 		if (nullableItr->second)
 		{

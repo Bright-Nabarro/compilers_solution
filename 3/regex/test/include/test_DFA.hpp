@@ -175,7 +175,7 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& rootSet = dfa.m_firstpos.find(&root)->second;
 	    
 	    auto& starChild = root->leftChild->leftChild; // a 节点
-	    EXPECT_EQ(rootSet.size(), 1); // 检查根节点的 firstpos
+	    EXPECT_EQ(rootSet.size(), 2); // 检查根节点的 firstpos
 	    EXPECT_TRUE(rootSet.contains(&starChild)); // firstpos 应包含 a 的叶子节点
 	}
 	{
@@ -239,12 +239,13 @@ TEST_F(TestDFA, test_firstpos)
 	
 	    EXPECT_EQ(dfa.m_firstpos.size(), 6);
 	    auto& root = dfa.m_tree.m_root;
-	    auto& leftChild = root->leftChild->leftChild;		// a* 的节点
-	    auto& rightChild = root->leftChild->rightChild;		// b 的节点
+		auto& oriRoot = root->leftChild;
+	    auto& leftChild = oriRoot->leftChild;		// a* 的节点
+	    auto& rightChild = oriRoot->rightChild;		// b 的节点
 	
-	    auto& rootSet = dfa.m_firstpos.find(&root)->second;
-	    EXPECT_TRUE(rootSet.contains(&leftChild->leftChild));
-		EXPECT_TRUE(rootSet.contains(&rightChild));
+	    auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
+	    EXPECT_TRUE(oriRootSet.contains(&leftChild->leftChild));
+		EXPECT_TRUE(oriRootSet.contains(&rightChild));
 	
 	    auto& leftSet = dfa.m_firstpos.find(&leftChild)->second;
 	    EXPECT_TRUE(leftSet.contains(&leftChild->leftChild));
@@ -252,7 +253,44 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& rightSet = dfa.m_firstpos.find(&rightChild)->second;
 	    EXPECT_TRUE(rightSet.contains(&rightChild));
 	}
+	{
+	    SyntaxTree tree{};		//       v  v v
+	    auto _ = tree.parse_regex("(((a*)b)*c)d");
+	    DFA dfa {};
+	    dfa.create_graph(std::move(tree));
+		EXPECT_EQ(dfa.m_nullable.size(), 11);
+		EXPECT_EQ(dfa.m_firstpos.size(), 11);
+		auto& oriRoot = dfa.m_tree.m_root->leftChild;
+		//auto& d = oriRoot->rightChild;
+		auto& cat1 = oriRoot->leftChild;
+		auto& c = cat1->rightChild;
+		auto& star1 = cat1->leftChild;
+		auto& cat2 = star1->leftChild;
+		auto& b = cat2->rightChild;
+		auto& star2 = cat2->leftChild;
+		auto& a = star2->leftChild;
 
+		auto& aSet = dfa.m_firstpos.find(&a)->second;
+		EXPECT_TRUE(aSet.contains(&a));
+		EXPECT_EQ(aSet.size(), 1);
+		auto& star2Set = dfa.m_firstpos.find(&star2)->second;
+		EXPECT_EQ(aSet, star2Set);
+		auto& cat2Set = dfa.m_firstpos.find(&cat2)->second;
+		EXPECT_EQ(cat2Set.size(), 2);
+		EXPECT_TRUE(cat2Set.contains(&a));
+		EXPECT_TRUE(cat2Set.contains(&b));
+		auto& cat1Set = dfa.m_firstpos.find(&cat1)->second;
+		EXPECT_EQ(cat1Set.size(), 3);
+		EXPECT_TRUE(cat1Set.contains(&a));
+		EXPECT_TRUE(cat1Set.contains(&b));
+		EXPECT_TRUE(cat1Set.contains(&c));
+		auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
+		EXPECT_EQ(oriRootSet.size(), 3);
+		EXPECT_TRUE(oriRootSet.contains(&a));
+		EXPECT_TRUE(oriRootSet.contains(&b));
+		EXPECT_TRUE(oriRootSet.contains(&c));
+
+	}
 }
 
 }	//namespace simple_regex
