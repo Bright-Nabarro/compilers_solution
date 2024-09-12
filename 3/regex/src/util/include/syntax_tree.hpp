@@ -103,6 +103,7 @@ private:
 	FRIEND_TEST(TestSyntaxTree, test_parse_regex);
 	FRIEND_TEST(TestDFA, test_nullable);
 	FRIEND_TEST(TestDFA, test_firstpos);
+	FRIEND_TEST(TestDFA, test_lastpos);
 	FRIEND_TEST(TestDFA, test_followpos);
 #endif
 };

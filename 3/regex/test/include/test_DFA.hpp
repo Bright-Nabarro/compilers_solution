@@ -293,4 +293,22 @@ TEST_F(TestDFA, test_firstpos)
 	}
 }
 
+//顺带测试重置, 不再使用作用域
+TEST_F(TestDFA, test_lastpos)
+{
+	SyntaxTree tree;
+	auto _ = tree.parse_regex("a");
+	DFA dfa {};
+	dfa.create_graph(std::move(tree));
+	EXPECT_EQ(dfa.m_lastpos.size(), 3);
+	auto& root = dfa.m_tree.m_root;
+	auto& leave = root->rightChild;
+	auto& leaveSet = dfa.m_lastpos.find(&leave)->second;
+	EXPECT_EQ(leaveSet.size(), 1);
+	EXPECT_TRUE(leaveSet.contains(&leave));
+	auto& rootSet = dfa.m_lastpos.find(&root)->second;
+	EXPECT_TRUE(rootSet.contains(&leave));
+	EXPECT_EQ(rootSet.size(), 1);
+}
+
 }	//namespace simple_regex
