@@ -1,4 +1,5 @@
 #include "dfa.hpp"
+#include <queue>
 
 namespace simple_regex 
 {
@@ -173,6 +174,23 @@ auto DFA::cal_followpos(uptr_t& uptr) -> void
 		{
 			auto& fpSet = m_followpos[lpItem];
 			fpSet.insert(fprt.cbegin(), fprt.cend());
+		}
+	}
+}
+
+auto DFA::construct_graph() -> void
+{
+	auto& charTable = m_tree.m_chrTable;
+	std::queue<std::unordered_set<puptr_t>> dataStats;
+	assert(m_firstpos.contains(&m_tree.m_root));
+	dataStats.push(m_firstpos[&m_tree.m_root]);
+
+	while (!dataStats.empty())
+	{
+		auto S = std::move(dataStats.front());
+		for (const auto& [ chr, posSet ] : charTable)
+		{
+
 		}
 	}
 }

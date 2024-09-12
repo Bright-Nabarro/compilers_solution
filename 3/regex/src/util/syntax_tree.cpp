@@ -100,9 +100,9 @@ auto SyntaxTree::parse(std::string_view sv)
 		return nullptr;
 
 	//or, cat相同优先级的最后一个匹配，保证为左结合,
-	//注意catIdx指向连接的第二各
+	//catIdx指向连接的第二个字符
 	ssize_t starIdx = -1, orIdx = -1, catIdx = -1;
-	//注意：转义字符和括号表达式指向其最后一个字符
+	//转译字符和括号表达式指向其最后一个字符
 	size_t preSymbol = std::numeric_limits<ssize_t>::max();
 	for (size_t idx = 0; idx < sv.length(); )
 	{
@@ -222,8 +222,8 @@ auto SyntaxTree::parse(std::string_view sv)
 
 	//只有单个符号时会达到此分支
 	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol]);
-	m_leavesTable.insert(&ret);
-	m_chrTable[sv[preSymbol]].push_back(&ret);
+	//m_leavesTable.insert(&ret);
+	m_chrTable[sv[preSymbol]].insert(&ret);
 
 	return ret;
 }
@@ -273,7 +273,8 @@ auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx) const
 void SyntaxTree::reset()
 {
 	m_root = nullptr;
-	m_leavesTable.clear();
+	//m_leavesTable.clear();
+	m_chrTable.clear();
 }
 
 } // namespace simple_regex

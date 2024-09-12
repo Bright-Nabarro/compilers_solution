@@ -93,8 +93,8 @@ private:
 	auto nodeType2string(const std::unique_ptr<Node>& ptr) const ->
 		std::optional<std::pair<std::string, std::string>>;
 	std::unique_ptr<Node> m_root;
-	std::unordered_set<std::unique_ptr<Node>*> m_leavesTable;
-	std::unordered_map<char, std::vector<std::unique_ptr<Node>*>> m_chrTable;
+	//std::unordered_set<std::unique_ptr<Node>*> m_leavesTable;
+	std::unordered_map<char, std::unordered_set<std::unique_ptr<Node>*>> m_chrTable;
 
 #ifdef DEBUG
 	friend class TestSyntaxTree;
