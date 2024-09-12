@@ -551,7 +551,7 @@ TEST_F(TestDFA, test_followpos)
 	}
 	{
 		SyntaxTree tree;
-		auto treeRet = tree.parse_regex("(a|b)*cde");
+		auto treeRet = tree.parse_regex("(a|b)*abb");
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));
