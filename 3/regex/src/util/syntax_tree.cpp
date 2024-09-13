@@ -2,6 +2,7 @@
 #include <format>
 #include <cassert>
 #include <print>
+#include <algorithm>
 
 namespace simple_regex
 {
@@ -18,6 +19,7 @@ auto SyntaxTree::parse_regex(std::string_view sv)
 	//在根的左子树添加#
 	m_root = std::make_unique<Node>(SyntaxTree::Node::CAT, std::move(*ret),
 		std::make_unique<Node>(SyntaxTree::Node::END, '#'));
+	mp_end = &m_root->rightChild;
 	return {};
 }
 
@@ -223,7 +225,8 @@ auto SyntaxTree::parse(std::string_view sv)
 	//只有单个符号时会达到此分支
 	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol]);
 	//m_leavesTable.insert(&ret);
-	m_chrTable[sv[preSymbol]].insert(&ret);
+	//m_chrTable[sv[preSymbol]].insert(&ret);
+	m_charTrick.insert(sv[preSymbol]);
 
 	return ret;
 }
@@ -274,7 +277,8 @@ void SyntaxTree::reset()
 {
 	m_root = nullptr;
 	//m_leavesTable.clear();
-	m_chrTable.clear();
+	//m_chrTable.clear();
+	m_charTrick.clear();
 }
 
 } // namespace simple_regex

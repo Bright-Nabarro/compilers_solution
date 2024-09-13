@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project(regex_praser CXX)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 if (ENABLE_RELEASE)
 	set(CMAKE_BUILD_TYPE Release)
 	add_compile_definitions(NDEBUG)
@@ -14,9 +11,21 @@ else()
 	add_compile_definitions(DEBUG)
 	add_compile_options(
 		-O0
-		-g
+		-g3
+		-fno-omit-frame-pointer
+		-fno-inline
 	)
 endif()
+
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+#if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#    add_compile_options(
+#        -stdlib=libc++
+#    )
+#endif()
 
 add_compile_options(
 	-Wall

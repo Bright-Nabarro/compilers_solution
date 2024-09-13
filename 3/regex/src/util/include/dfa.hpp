@@ -3,6 +3,26 @@
 #include <unordered_map>
 #include "syntax_tree.hpp"
 
+namespace std
+{
+
+template<typename Ty>
+struct hash<std::unordered_set<Ty>>
+{
+	size_t operator()(const std::unordered_set<Ty>& set) const
+	{
+		size_t hashValue = 0;
+		auto hashTy = std::hash<Ty>{};
+		for (const auto& elem: set)
+		{
+			hashValue ^= hashTy(elem);
+		}
+		return hashValue;
+	}
+};
+
+}	//namespace std
+
 namespace simple_regex
 {
 
@@ -10,6 +30,7 @@ class DFA
 {
 	using uptr_t = std::unique_ptr<SyntaxTree::Node>;
 	using puptr_t = std::unique_ptr<SyntaxTree::Node>*;
+	using vertex = std::unordered_set<puptr_t>;
 public:
 	DFA() = default;
 	void create_graph(SyntaxTree&& tree);
@@ -38,8 +59,32 @@ private:
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_firstpos;
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_lastpos;
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_followpos;
-	//储存图的邻接矩阵
-	std::unordered_map<puptr_t, std::set<puptr_t>> m_graph;
+	
+	struct refVertexHash
+	{
+		size_t operator()(const std::reference_wrapper<const vertex>& value) const
+		{
+			return std::hash<vertex>{}(value.get());
+		}
+
+	};
+	struct refVertexEqual
+	{
+		bool operator()(const std::reference_wrapper<const vertex>& rhs,
+				const std::reference_wrapper<const vertex>& lhs) const
+		{
+			return rhs.get() == lhs.get();
+		}
+	};
+	//独立存储，必须要复制
+	std::unordered_map<vertex, bool> m_vertexTable;
+
+	std::unordered_map<
+		std::reference_wrapper<const vertex>,
+		std::pair<char,  std::reference_wrapper<const vertex>>,
+		refVertexHash,
+		refVertexEqual
+	> m_graph;
 
 #ifdef DEBUG
 	friend class TestDFA;
@@ -47,6 +92,7 @@ private:
 	FRIEND_TEST(TestDFA, test_firstpos);
 	FRIEND_TEST(TestDFA, test_lastpos);
 	FRIEND_TEST(TestDFA, test_followpos);
+	FRIEND_TEST(TestDFA, test_construct_graph);
 #endif
 };
 

@@ -17,6 +17,8 @@ void DFA::create_graph(SyntaxTree&& tree)
 	cal_flpos<false>(m_tree.m_root);
 	
 	cal_followpos(m_tree.m_root);
+
+	construct_graph();
 }
 
 void DFA::display(std::ostream& os)
@@ -106,8 +108,8 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 		else
 		{
 			auto retItr = check_and_get_table_elements(c1, m_firstpos);
-			assert(!dealMap->contains(&uptr));
-			dealMap->insert({&uptr, retItr->second});
+			auto [_, success] = dealMap->insert({&uptr, retItr->second});
+			assert(success);
 		}
 
 		return;
@@ -133,8 +135,8 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 	}
 	case SyntaxTree::Node::LEAVE:
 	case SyntaxTree::Node::END: {
-		assert(!dealMap->contains(&uptr));
-		dealMap->insert({&uptr, std::unordered_set{&uptr}});
+		auto [_, success] = dealMap->insert({&uptr, std::unordered_set{&uptr}});
+		assert(success);
 		return;
 	}
 	default:
@@ -180,17 +182,36 @@ auto DFA::cal_followpos(uptr_t& uptr) -> void
 
 auto DFA::construct_graph() -> void
 {
-	auto& charTable = m_tree.m_chrTable;
-	std::queue<std::unordered_set<puptr_t>> dataStats;
-	assert(m_firstpos.contains(&m_tree.m_root));
-	dataStats.push(m_firstpos[&m_tree.m_root]);
+	auto& charTable = m_tree.m_charTrick;
+	auto& pEnd = m_tree.mp_end;
+	std::queue<std::reference_wrapper<const vertex>> dataStats;
+	auto& firstEle = m_firstpos.at(&m_tree.m_root);
+	dataStats.push(std::cref(firstEle));
+	auto [_, insSuccess] = m_vertexTable.insert(std::pair{firstEle, firstEle.contains(pEnd)});
+	assert(insSuccess);
 
 	while (!dataStats.empty())
 	{
-		auto S = std::move(dataStats.front());
-		for (const auto& [ chr, posSet ] : charTable)
+		auto S = dataStats.front();
+		dataStats.pop();
+		for (char c : charTable)
 		{
+			auto U = std::unordered_set<puptr_t>{};
+			for (const auto& puptr : S.get())
+			{
+				if ((*puptr)->leavePtr->chr != c)
+					continue;
+				const auto& pSet = m_followpos.at(puptr);
+				U.insert(pSet.cbegin(), pSet.cend());
+			}
+			
+			bool markComplete = U.contains(pEnd);
+			auto [insItr, insSuccess] = m_vertexTable.insert(std::pair{std::move(U), markComplete});
+			if (insSuccess)
+				dataStats.push(U);
 
+			//Dtran[S, a] = U
+			m_graph.insert( { std::cref(insItr->first), std::pair{ c, S } });
 		}
 	}
 }

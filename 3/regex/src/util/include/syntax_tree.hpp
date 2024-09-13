@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <tl/expected.hpp>
-#include <unordered_map>
 #include <unordered_set>
 
 namespace simple_regex
@@ -93,8 +92,11 @@ private:
 	auto nodeType2string(const std::unique_ptr<Node>& ptr) const ->
 		std::optional<std::pair<std::string, std::string>>;
 	std::unique_ptr<Node> m_root;
+	std::unique_ptr<Node>* mp_end;
 	//std::unordered_set<std::unique_ptr<Node>*> m_leavesTable;
-	std::unordered_map<char, std::unordered_set<std::unique_ptr<Node>*>> m_chrTable;
+	//std::unordered_map<char, std::unordered_set<std::unique_ptr<Node>*>> m_chrTable;
+	std::unordered_set<char> m_charTrick;
+	
 
 #ifdef DEBUG
 	friend class TestSyntaxTree;
@@ -105,6 +107,7 @@ private:
 	FRIEND_TEST(TestDFA, test_firstpos);
 	FRIEND_TEST(TestDFA, test_lastpos);
 	FRIEND_TEST(TestDFA, test_followpos);
+	FRIEND_TEST(TestDFA, test_construct_graph);
 #endif
 };
 

@@ -589,4 +589,32 @@ TEST_F(TestDFA, test_followpos)
 	}
 }
 
+TEST_F(TestDFA, test_construct_graph)
+{
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("a");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		EXPECT_EQ(dfa.m_vertexTable.size(), 1);
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("ab");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		//EXPECT_EQ(dfa.m_vertexTable.size(), 2);
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("(a|b)*");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		EXPECT_EQ(dfa.m_vertexTable.size(), 1);
+	}
+}
+
 }	//namespace simple_regex
