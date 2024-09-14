@@ -21,7 +21,7 @@ void DFA::create_graph(SyntaxTree&& tree)
 	construct_graph();
 }
 
-void DFA::display_graph(std::ostream& os)
+void DFA::display_graph(std::ostream& os) const
 {
 	using namespace std::string_literals;
 	//将顶点映射成字符表示
@@ -36,7 +36,10 @@ void DFA::display_graph(std::ostream& os)
 	}
 	
 	std::println(os, "``` graphviz");
-	std::println(os, "digraph DFA{} {{", reinterpret_cast<void*>(this));
+	std::println(os, "digraph DFA{} {{", reinterpret_cast<const void*>(this));
+	//开始标记
+	std::println(os, "BEGIN_MARK -> {} [label = \"first\"]", vtx2str.at(m_begin));
+	std::println(os, "BEGIN_MARK [shape = none, label = \"\"]");
  	//节点
 	for (const auto& [ vtx, isEnd ] : m_vertexTable)
 	{
@@ -47,15 +50,28 @@ void DFA::display_graph(std::ostream& os)
 	}
 	
 	//图
-	for (const auto& [ vtxFrom, pair ] : m_graph)
+	for (const auto& [ pair, vtxTo ] : m_graph)
 	{
-		const auto& [ edge, vtxTo ] { pair };
+		const auto& [ vtxFrom, edge ] { pair };
 		std::println(os, "{0} -> {2} [ label = {1} ]",
 				vtx2str.at(vtxFrom), edge, vtx2str.at(vtxTo));
 	}
 
 	std::println(os, "}}");
 	std::println(os, "```");
+}
+
+void DFA::display_followpos(std::ostream& os) const
+{
+	for (const auto& [ puptr, set ] : m_followpos)
+	{
+		std::print(os, "{} :\t", (*puptr)->leavePtr->chr);
+		for ( const auto& puptr : set)
+		{
+			std::print(os, "{} ", (*puptr)->leavePtr->chr);
+		}
+		os << std::endl;
+	}
 }
 
 auto DFA::cal_nullable(uptr_t& uptr) -> bool
@@ -257,11 +273,11 @@ auto DFA::construct_graph() -> void
 	auto& charTable = m_tree.m_charTrick;
 
 	auto& pEnd = m_tree.mp_end;
-	auto firstEle = make_shared<vertex>(m_firstpos.at(&m_tree.m_root));
-	m_vertexTable.insert({firstEle, firstEle->contains(pEnd)});
+	m_begin = make_shared<vertex>(m_firstpos.at(&m_tree.m_root));
+	m_vertexTable.insert({m_begin, m_begin->contains(pEnd)});
 
 	std::queue<std::shared_ptr<vertex>> dataStats;
-	dataStats.push(firstEle);
+	dataStats.push(m_begin);
 
 	while(!dataStats.empty())
 	{
@@ -280,11 +296,15 @@ auto DFA::construct_graph() -> void
 				const auto& set = flwItr->second;
 				U->insert(set.cbegin(), set.cend());
 			}
+			if (U->empty())
+				continue;
 
+			//需要处理相等问题
 			auto [ insItr, insSuccess ] = m_vertexTable.insert({U, U->contains(pEnd)});
+			auto& Ulike = insItr->first;
 			if (insSuccess && !U->empty())
-				dataStats.push(U);
-			m_graph.insert( { S, { c, U } });
+				dataStats.push(Ulike);
+			m_graph.insert( { { S, c }, Ulike });
 		}
 	}
 }

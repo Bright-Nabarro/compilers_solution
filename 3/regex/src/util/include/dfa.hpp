@@ -34,7 +34,8 @@ class DFA
 public:
 	DFA() = default;
 	void create_graph(SyntaxTree&& tree);
-	void display_graph(std::ostream& os);
+	void display_graph(std::ostream& os) const;
+	void display_followpos(std::ostream& os) const;
 
 private:	//四个算法函数
 	auto cal_nullable(uptr_t& uptr) -> bool;
@@ -69,6 +70,24 @@ private:	//辅助函数
 			return *lhs == *rhs;
 		}
 	};
+
+	struct pairShdPtrCharHash
+	{
+		size_t operator()(const std::pair<std::shared_ptr<vertex>, char>& value) const
+		{
+			return shdPtrVauleHash{}(value.first) ^ value.second;
+		}
+	};
+
+	struct pairShdPtrCharEqual
+	{
+		bool operator()(const std::pair<std::shared_ptr<vertex>, char>& lhs,
+			const std::pair<std::shared_ptr<vertex>, char>& rhs) const
+		{
+			return shdPtrVauleEqual{}(lhs.first, rhs.first)
+				&& lhs.second == rhs.second;
+		}
+	};
 private:
 	SyntaxTree m_tree;
 	std::unordered_map<puptr_t, bool> m_nullable;
@@ -79,11 +98,12 @@ private:
 	std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash, shdPtrVauleEqual> m_vertexTable;
 
 	std::unordered_map<
+		std::pair<std::shared_ptr<vertex>, char>,
 		std::shared_ptr<vertex>,
-		std::pair<char,  std::shared_ptr<vertex>>,
-		shdPtrVauleHash,
-		shdPtrVauleEqual
+		pairShdPtrCharHash,
+		pairShdPtrCharEqual
 	> m_graph;
+	std::shared_ptr<vertex> m_begin;
 
 #ifdef DEBUG
 	friend class TestDFA;

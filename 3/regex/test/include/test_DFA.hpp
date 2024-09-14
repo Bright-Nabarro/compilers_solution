@@ -610,11 +610,21 @@ TEST_F(TestDFA, test_construct_graph)
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));
+		//dfa.display_followpos(std::cout);
 		dfa.display_graph(outfile);
 	}
 	{
 		SyntaxTree tree;
 		auto treeRet = tree.parse_regex("(a|b)*");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		//dfa.display_followpos(std::cout);
+		dfa.display_graph(outfile);
+	}
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("(a|b)*abb(a|b)*");
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));

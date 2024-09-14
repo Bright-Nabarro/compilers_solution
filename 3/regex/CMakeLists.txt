@@ -11,9 +11,7 @@ else()
 	add_compile_definitions(DEBUG)
 	add_compile_options(
 		-O0
-		-g3
-		-fno-omit-frame-pointer
-		-fno-inline
+		-g
 	)
 endif()
 
