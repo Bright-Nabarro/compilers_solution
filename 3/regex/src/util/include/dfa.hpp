@@ -33,6 +33,10 @@ class DFA
 	using vertex = std::unordered_set<puptr_t>;
 public:
 	DFA() = default;
+	DFA(const DFA&) = delete;
+	DFA& operator= (const DFA&) = delete;
+	DFA(DFA&&) = default;
+	DFA& operator= (DFA&&) = default;
 	void create_graph(SyntaxTree&& tree);
 	void display_graph(std::ostream& os) const;
 	void display_followpos(std::ostream& os) const;
