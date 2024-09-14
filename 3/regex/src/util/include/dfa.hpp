@@ -34,7 +34,7 @@ class DFA
 public:
 	DFA() = default;
 	void create_graph(SyntaxTree&& tree);
-	void display(std::ostream& os);
+	void display_graph(std::ostream& os);
 
 private:	//四个算法函数
 	auto cal_nullable(uptr_t& uptr) -> bool;
@@ -53,6 +53,22 @@ private:	//辅助函数
 			};
 		return retPtr;
 	}
+
+	struct shdPtrVauleHash
+	{
+		size_t operator()(const std::shared_ptr<vertex>& value) const
+		{
+			return std::hash<vertex>{}(*value);
+		}
+	};
+
+	struct shdPtrVauleEqual
+	{
+		bool operator()(const std::shared_ptr<vertex>& lhs, const std::shared_ptr<vertex>& rhs) const
+		{
+			return *lhs == *rhs;
+		}
+	};
 private:
 	SyntaxTree m_tree;
 	std::unordered_map<puptr_t, bool> m_nullable;
@@ -60,30 +76,13 @@ private:
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_lastpos;
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_followpos;
 	
-	struct refVertexHash
-	{
-		size_t operator()(const std::reference_wrapper<const vertex>& value) const
-		{
-			return std::hash<vertex>{}(value.get());
-		}
-
-	};
-	struct refVertexEqual
-	{
-		bool operator()(const std::reference_wrapper<const vertex>& rhs,
-				const std::reference_wrapper<const vertex>& lhs) const
-		{
-			return rhs.get() == lhs.get();
-		}
-	};
-	//独立存储，必须要复制
-	std::unordered_map<vertex, bool> m_vertexTable;
+	std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash, shdPtrVauleEqual> m_vertexTable;
 
 	std::unordered_map<
-		std::reference_wrapper<const vertex>,
-		std::pair<char,  std::reference_wrapper<const vertex>>,
-		refVertexHash,
-		refVertexEqual
+		std::shared_ptr<vertex>,
+		std::pair<char,  std::shared_ptr<vertex>>,
+		shdPtrVauleHash,
+		shdPtrVauleEqual
 	> m_graph;
 
 #ifdef DEBUG

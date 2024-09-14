@@ -21,7 +21,10 @@
 - `#`终结字符不显示出现在字符串中，在外层构建的时候添加, 节点以END标识，以区分正常的`#`字符
 
 
+### important
+- 实现大量使用unique_ptr<T>*, 而哈希进行rehash操作时会使其失效, 全部使用`std::shared_ptr`重构
+- 首先在上层`DFA`储存图的元素修改为`shared_ptr`
+
 # 待优化遗留
 - 构建语法树过程使用递归，每次扫描一遍
 
-- 实现大量使用unique_ptr<T>*, 日后替换成unique_ptr_view

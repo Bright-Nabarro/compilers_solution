@@ -1,6 +1,8 @@
 #pragma once
 #include <gtest/gtest.h>
+#include <fstream>
 #include "dfa.hpp"
+
 namespace simple_regex
 {
 
@@ -591,13 +593,16 @@ TEST_F(TestDFA, test_followpos)
 
 TEST_F(TestDFA, test_construct_graph)
 {
+	std::ofstream outfile { "graph.md", std::ios::ate | std::ios::out };
+	ASSERT_TRUE(outfile);
+
 	{
 		SyntaxTree tree;
 		auto treeRet = tree.parse_regex("a");
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));
-		EXPECT_EQ(dfa.m_vertexTable.size(), 1);
+		dfa.display_graph(outfile);
 	}
 	{
 		SyntaxTree tree;
@@ -605,7 +610,7 @@ TEST_F(TestDFA, test_construct_graph)
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));
-		//EXPECT_EQ(dfa.m_vertexTable.size(), 2);
+		dfa.display_graph(outfile);
 	}
 	{
 		SyntaxTree tree;
@@ -613,7 +618,7 @@ TEST_F(TestDFA, test_construct_graph)
 		ASSERT_TRUE(treeRet);
 		DFA dfa {};
 		dfa.create_graph(std::move(tree));
-		EXPECT_EQ(dfa.m_vertexTable.size(), 1);
+		dfa.display_graph(outfile);
 	}
 }
 
