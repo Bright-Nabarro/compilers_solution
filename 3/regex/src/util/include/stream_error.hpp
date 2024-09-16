@@ -8,14 +8,14 @@ namespace yq
 
 enum class stream_errc
 {
-	success = 0,
-	eof,
-	open_failed,
-	read_write_faild,
-	read_failed,
-	write_failed,
-	invalid_format,
-	invalid_file_path,
+    success = 0,
+    eof,
+    open_failed,
+    read_failed,
+    write_failed,
+    invalid_format,
+    invalid_file_path,
+    critical_error,
 };
 
 class stream_error_category : public ::std::error_category
@@ -32,8 +32,6 @@ public:
 			return "Success";
 		case stream_errc::open_failed:
 			return "Failed to open stream";
-		case stream_errc::read_write_faild:
-			return "Failed to read or write to stream";
 		case stream_errc::read_failed:
 			return "Failed to read from stream";
 		case stream_errc::write_failed:
@@ -44,6 +42,8 @@ public:
 			return "End of file reached";
 		case stream_errc::invalid_file_path:
 			return "Invalid file path";
+		case stream_errc::critical_error:
+			return "Critical io error";
 		default:
 			return "Unknown stream error";
 

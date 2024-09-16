@@ -1,5 +1,6 @@
 set (TARGET unit_test)
 include_directories(${CMAKE_SOURCE_DIR}/src/util/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/include)
 include_directories(./include)
 aux_source_directory(. SRC)
 

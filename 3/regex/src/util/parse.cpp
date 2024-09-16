@@ -85,11 +85,15 @@ void Parse::construct_parse_string(
 {
 	m_praseContext.emplace_back(
 		std::string { beg, end },
-		std::distance(contentBegin, beg),
-		std::distance(contentBegin, end)
+		std::distance(contentBegin, beg)
 	);
+}
+
+void Parse::clear_result()
+{
+	m_praseContext.clear();
 }
 
 
 }	//namespace simple_regex
-	
+

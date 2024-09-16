@@ -1,4 +1,3 @@
-#pragma once
 #include <fstream>
 #include <gtest/gtest.h>
 #include "syntax_tree.hpp"

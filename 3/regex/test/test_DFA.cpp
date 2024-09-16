@@ -1,4 +1,3 @@
-#pragma once
 #include <gtest/gtest.h>
 #include <fstream>
 #include "dfa.hpp"

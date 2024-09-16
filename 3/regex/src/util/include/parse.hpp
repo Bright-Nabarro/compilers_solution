@@ -11,14 +11,15 @@ public:
 	{
 		std::string context;
 		size_t begPos;
-		size_t endPos;
 	};
 	Parse(DFA&& dfa) : m_dfa { std::move(dfa) }{}
 	[[nodiscard]]
 	auto parse_stream(std::istream& is)
 		-> tl::expected<void, std::string>;
+	[[nodiscard]]
 	auto get_parse_string_list() const
 		-> const std::vector<ParseString>&;
+	void clear_result();
 private:
 	void construct_parse_string(
 		std::string::iterator contentBegin,
