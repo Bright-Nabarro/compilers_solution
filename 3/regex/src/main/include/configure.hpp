@@ -26,7 +26,8 @@ public:
 		m_regexString {},
 		m_inStream {&std::cin},
 		m_file {},
-		m_allfileMark { false }
+		m_allfileMark { false },
+		m_noparse { false }
 	{
 	}
 
@@ -36,6 +37,7 @@ public:
 	auto set_regex_string(std::string_view sv) -> void;
 	auto set_istream(std::string_view sv) -> tl::expected<void, std::string>;
 	auto set_allfileMark(bool mark) -> void;
+	auto set_noparse(bool mark) -> void;
 
 	auto get_printable() const -> bool;
 	auto get_outputdir() const -> std::string;
@@ -43,6 +45,7 @@ public:
 	auto get_regex_string() const -> std::string;
 	auto get_istream() const -> std::istream&;
 	auto allfile() const -> bool;
+	auto get_noparse() const -> bool;
 
 private:
 	bool m_printable;
@@ -52,6 +55,7 @@ private:
 	std::istream* m_inStream;
 	std::ifstream m_file;
 	bool m_allfileMark;
+	bool m_noparse;
 };
 
 }

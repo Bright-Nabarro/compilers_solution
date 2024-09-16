@@ -46,6 +46,11 @@ auto MainConfigure::set_allfileMark(bool mark) -> void
 	m_allfileMark = mark;
 }
 
+auto MainConfigure::set_noparse(bool mark) -> void
+{
+	m_noparse = mark;
+}
+
 auto MainConfigure::get_printable() const -> bool
 {
 	return m_printable;
@@ -75,5 +80,11 @@ auto MainConfigure::allfile() const -> bool
 {
 	return m_allfileMark;
 }
+
+auto MainConfigure::get_noparse() const -> bool
+{
+	return m_noparse;
+}
+
 
 }	//namespace simple_regex

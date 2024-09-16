@@ -3,6 +3,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <fstream>
+#include "stream_error.hpp"
 #include "configure.hpp"
 #include "syntax_tree.hpp"
 #include "dfa.hpp"
@@ -24,7 +25,8 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		("print,p", "Enable output tree.md and graph.md")
 		("regex,r", po::value<std::string>(), "Input Regex")
 		("input,I", po::value<std::string>(), "Input filename")
-		("all,A", "parse all file ( default each line )");
+		("all,A", "parse all file (default each line)")
+		("noparse,N", "disable parse function (usually only used to observe output)");
 	
 	po::variables_map vm;
 	try {
@@ -78,33 +80,30 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		mainConfigure.set_allfileMark(true);
 	}
 
+	if (vm.count("noparse"))
+	{
+		mainConfigure.set_noparse(true);
+	}
+
 	return true;
 }
 
 template<typename ObjFunc, typename Obj>
-auto state_display(const sr::MainConfigure& mainConfigure,
-	ObjFunc objfunc, const Obj& obj) -> tl::expected<void, std::string>
+void state_display(const sr::MainConfigure& mainConfigure,
+	std::ofstream& outfile, ObjFunc objfunc, const Obj& obj)
 {
-	using namespace std::string_literals;
 	if (!mainConfigure.get_printable())
-		return {};
+		return;
 
-	auto filePath = mainConfigure.get_outputdir() + "/"s + "output.md"s; 
-	static std::ofstream outfile {filePath, std::ios::out};
-	if (!outfile)
-	{
-		return tl::make_unexpected(
-				std::format("ofstream error: cannot open {}", filePath)
-		);
-	}
 	(obj.*objfunc)(outfile);
-
-	return {};
+	std::flush(outfile);
+	return;
 }
 
 auto main_loop(const sr::MainConfigure& mainConfigure)
 	-> tl::expected<void, std::string>
 {
+	using namespace std::string_literals;
 	sr::SyntaxTree tree;
 	if (mainConfigure.get_model() != sr::ModelId::DFA)
 	{
@@ -119,25 +118,27 @@ auto main_loop(const sr::MainConfigure& mainConfigure)
 			tl::make_unexpected(std::format("regex error: {}", treeRet.error()));
 	}
 	
-	//auto displayRet = state_display(mainConfigure,
-	//	static_cast<void (sr::SyntaxTree::*)(std::ostream& os) const>
-	//	(&sr::SyntaxTree::display), tree);
-	//if (!displayRet)
-	//{
-	//	std::println(std::cerr, "display error: {}", displayRet.error());
-	//}
-	
+	auto filePath = mainConfigure.get_outputdir() + "/"s + "output.md"s; 
+	std::ofstream outfile {filePath, std::ios::out | std::ios::trunc};
+	auto error_code = yq::get_stream_error(outfile);
+	if (error_code)
+		return tl::make_unexpected(error_code.message());
+
+
+	state_display(mainConfigure, outfile,
+		static_cast<void (sr::SyntaxTree::*)(std::ostream& os) const>
+		(&sr::SyntaxTree::display), tree);
+
 	sr::DFA dfa;
 	dfa.create_graph(std::move(tree));
 
-	auto displayRet = state_display(mainConfigure, &sr::DFA::display_graph, dfa);
-	if (!displayRet)
-	{
-		std::println(std::cerr, "display error: {}", displayRet.error());
-	}
-
+	state_display(mainConfigure, outfile, &sr::DFA::display_graph, dfa);
+	
 	simple_regex::Parse parseContext { std::move(dfa) };
 	
+	if (mainConfigure.get_noparse())
+		return {};
+
 	auto praseStreamRet = parseContext.parse_stream(mainConfigure.get_istream());
 	if (!praseStreamRet)
 		return praseStreamRet;
