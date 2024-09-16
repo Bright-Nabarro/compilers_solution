@@ -6,13 +6,14 @@
 #include "configure.hpp"
 #include "syntax_tree.hpp"
 #include "dfa.hpp"
-
+#include "parse.hpp"
 
 namespace po = boost::program_options;
 namespace sr = simple_regex;
 
+//如果返回false, 代表非错误退出
 auto parse_main_arg(sr::MainConfigure& mainConfigure,
-		int argc, char* argv[]) -> tl::expected<void, std::string>
+		int argc, char* argv[]) -> tl::expected<bool, std::string>
 {
 	po::options_description desc { "Options:" };
 	desc.add_options()
@@ -36,7 +37,7 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 	if (vm.count("help"))
 	{
 		desc.print(std::cout);
-		return {};
+		return false;
 	}
 	
 	if (vm.count("model"))
@@ -77,7 +78,7 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		mainConfigure.set_allfileMark(true);
 	}
 
-	return {};
+	return true;
 }
 
 template<typename ObjFunc, typename Obj>
@@ -88,8 +89,8 @@ auto state_display(const sr::MainConfigure& mainConfigure,
 	if (!mainConfigure.get_printable())
 		return {};
 
-	auto filePath = mainConfigure.get_outputdir() + "/"s + "tree.md"s; 
-	std::ofstream outfile {filePath, std::ios::ate | std::ios::out};
+	auto filePath = mainConfigure.get_outputdir() + "/"s + "output.md"s; 
+	static std::ofstream outfile {filePath, std::ios::out};
 	if (!outfile)
 	{
 		return tl::make_unexpected(
@@ -118,26 +119,38 @@ auto main_loop(const sr::MainConfigure& mainConfigure)
 			tl::make_unexpected(std::format("regex error: {}", treeRet.error()));
 	}
 	
-	auto displayRet = state_display(mainConfigure,
-		static_cast<void (sr::SyntaxTree::*)(std::ostream& os) const>
-		(&sr::SyntaxTree::display), tree);
-	if (!displayRet)
-	{
-		std::println(std::cerr, "display error: {}", displayRet.error());
-	}
+	//auto displayRet = state_display(mainConfigure,
+	//	static_cast<void (sr::SyntaxTree::*)(std::ostream& os) const>
+	//	(&sr::SyntaxTree::display), tree);
+	//if (!displayRet)
+	//{
+	//	std::println(std::cerr, "display error: {}", displayRet.error());
+	//}
 	
 	sr::DFA dfa;
 	dfa.create_graph(std::move(tree));
 
-	displayRet = state_display(mainConfigure, &sr::DFA::display_graph, dfa);
+	auto displayRet = state_display(mainConfigure, &sr::DFA::display_graph, dfa);
 	if (!displayRet)
 	{
 		std::println(std::cerr, "display error: {}", displayRet.error());
 	}
 
-	while(mainConfigure.get_istream())
+	simple_regex::Parse parseContext { std::move(dfa) };
+	
+	auto praseStreamRet = parseContext.parse_stream(mainConfigure.get_istream());
+	if (!praseStreamRet)
+		return praseStreamRet;
+	
+	decltype(auto) parseStringList = parseContext.get_parse_string_list();
+	
+	if (parseStringList.empty())
+		std::println(stdout, "miss match");
+
+	for (decltype(auto) parseString :parseStringList)
 	{
-		
+		std::println(stdout, "parse string[{}]:\t{}",
+				parseString.begPos, parseString.context);
 	}
 
 	return {};
@@ -152,6 +165,8 @@ int main(int argc, char* argv[])
 		std::println(std::cerr, "Initail error: {}", parseRet.error());
 		return 1;
 	}
+	if (!*parseRet)
+		return 0;
 	
 	auto mainLoopRet = main_loop(mainConfigure);
 	if (!mainLoopRet)

@@ -7,3 +7,4 @@ lex.yy.c
 .cache/
 compile_commands.json
 *.a
+./.vscode

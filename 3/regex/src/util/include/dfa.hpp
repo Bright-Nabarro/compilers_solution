@@ -28,10 +28,10 @@ namespace simple_regex
 
 class DFA
 {
+public:
 	using uptr_t = std::unique_ptr<SyntaxTree::Node>;
 	using puptr_t = std::unique_ptr<SyntaxTree::Node>*;
 	using vertex = std::unordered_set<puptr_t>;
-public:
 	DFA() = default;
 	DFA(const DFA&) = delete;
 	DFA& operator= (const DFA&) = delete;
@@ -40,6 +40,12 @@ public:
 	void create_graph(SyntaxTree&& tree);
 	void display_graph(std::ostream& os) const;
 	void display_followpos(std::ostream& os) const;
+	const auto& get_graph() const
+	{ return m_graph; }
+	auto get_begin() const
+	{ return m_begin; }
+	const auto& get_vtxTable() const
+	{ return m_vertexTable; }
 
 private:	//四个算法函数
 	auto cal_nullable(uptr_t& uptr) -> bool;
@@ -98,7 +104,7 @@ private:
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_firstpos;
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_lastpos;
 	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_followpos;
-	
+	//value为true代表此节点为终态
 	std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash, shdPtrVauleEqual> m_vertexTable;
 
 	std::unordered_map<
