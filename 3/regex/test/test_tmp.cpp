@@ -12,6 +12,7 @@ TEST(End, test_end_early)
 	tree.display(std::cout);
 	DFA dfa;
 	dfa.create_graph(std::move(tree));
+	dfa.display_graph(std::cout);
 	std::println(stdout, "followpos:");
 	dfa.display_followpos(std::cout);
 }

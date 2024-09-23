@@ -17,9 +17,9 @@ auto SyntaxTree::parse_regex(std::string_view sv)
 	if (*ret == nullptr)
 		return {};
 	//在根的左子树添加#
-	m_root = std::make_unique<Node>(SyntaxTree::Node::CAT, std::move(*ret),
-		std::make_unique<Node>(SyntaxTree::Node::END, '#'));
-	mp_end = &m_root->rightChild;
+	m_root = std::make_shared<Node>(SyntaxTree::Node::CAT, *ret,
+		std::make_shared<Node>(SyntaxTree::Node::END, '#'));
+	m_end = m_root->rightChild;
 	return {};
 }
 
@@ -39,7 +39,7 @@ void SyntaxTree::display(std::ostream& os) const
 	std::println(os, "```\n");
 }
 
-void SyntaxTree::display(std::ostream& os, const std::unique_ptr<Node>& ptr,
+void SyntaxTree::display(std::ostream& os, const std::shared_ptr<Node> ptr,
 	const std::string& ptrStr) const
 {
 	auto left = nodeType2string(ptr->leftChild);
@@ -66,7 +66,7 @@ void SyntaxTree::display(std::ostream& os, const std::unique_ptr<Node>& ptr,
 	}
 }
 
-auto SyntaxTree::nodeType2string(const std::unique_ptr<Node>& ptr) const ->
+auto SyntaxTree::nodeType2string(const std::shared_ptr<Node> ptr) const ->
 	std::optional<std::pair<std::string, std::string>>
 {
 	if (ptr == nullptr)
@@ -93,7 +93,7 @@ auto SyntaxTree::nodeType2string(const std::unique_ptr<Node>& ptr) const ->
 
 
 auto SyntaxTree::parse(std::string_view sv)
-	-> tl::expected<std::unique_ptr<Node>, std::string>
+	-> tl::expected<std::shared_ptr<Node>, std::string>
 {
 	//需要在前添加转译字符的字符集
 	static constexpr char charSet[] = {'*', '|', '(', ')', '\\'};
@@ -195,8 +195,7 @@ auto SyntaxTree::parse(std::string_view sv)
 		auto ret = parse_cat(sv, 0, orIdx, orIdx+1, sv.length()-orIdx-1, Node::OR);
 		if (!ret)
 			return tl::make_unexpected(ret.error());
-		//为了隐式转换成tl::expected, 这里用std::move转换成右值是必须的
-		return std::move(*ret);
+		return *ret;
 	}
 
 	if (catIdx > 0)
@@ -205,7 +204,7 @@ auto SyntaxTree::parse(std::string_view sv)
 		auto ret = parse_cat(sv, 0, catIdx, catIdx, sv.length() - catIdx, Node::CAT);
 		if (!ret)
 			return tl::make_unexpected(ret.error());
-		return std::move(*ret);
+		return *ret;
 	}
 	
 	if (starIdx > 0)
@@ -214,7 +213,7 @@ auto SyntaxTree::parse(std::string_view sv)
 		auto ret = parse_cat(sv, 0, starIdx, starIdx+1, sv.length()-starIdx-1, Node::STAR);
 		if (!ret)
 			return tl::make_unexpected(ret.error());
-		return std::move(*ret);
+		return *ret;
 	}
 	
 	if (preSymbol >= sv.length()) [[unlikely]]
@@ -223,7 +222,7 @@ auto SyntaxTree::parse(std::string_view sv)
 	}
 
 	//只有单个符号时会达到此分支
-	auto ret = std::make_unique<Node>(Node::LEAVE, sv[preSymbol]);
+	auto ret = std::make_shared<Node>(Node::LEAVE, sv[preSymbol]);
 	//m_leavesTable.insert(&ret);
 	//m_chrTable[sv[preSymbol]].insert(&ret);
 	m_charTrick.insert(sv[preSymbol]);
@@ -233,14 +232,14 @@ auto SyntaxTree::parse(std::string_view sv)
 
 auto SyntaxTree::parse_cat(std::string_view sv, size_t leftBeg, size_t leftLen,
 	size_t rightBeg, size_t rightLen, Node::NodeType type)
-		-> tl::expected<std::unique_ptr<Node>, std::string>
+		-> tl::expected<std::shared_ptr<Node>, std::string>
 {
 	auto left = parse(sv.substr(leftBeg, leftLen));
 	if (!left) return tl::make_unexpected(left.error());
 	auto right = parse(sv.substr(rightBeg, rightLen));
 	if (!right) return tl::make_unexpected(right.error());
 
-	return std::make_unique<Node>(type, std::move(*left), std::move(*right));
+	return std::make_shared<Node>(type, *left, *right);
 }
 
 auto SyntaxTree::pattern_pth(std::string_view sv, size_t idx) const

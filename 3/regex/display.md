@@ -1,6 +1,6 @@
 `((a|b)*abb(a|b)*)`
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 "cat0" [label = "•"]
 "cat0" -> "cat1"
@@ -40,14 +40,14 @@ node [shape=plaintext]
 
 ``
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 }
 ```
 
 `a`
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 "cat0" [label = "•"]
 "cat0" -> "a 0"
@@ -59,7 +59,7 @@ node [shape=plaintext]
 
 `abc`
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 "cat0" [label = "•"]
 "cat0" -> "cat1"
@@ -79,7 +79,7 @@ node [shape=plaintext]
 
 `(a|b)a*`
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 "cat0" [label = "•"]
 "cat0" -> "cat1"
@@ -101,7 +101,7 @@ node [shape=plaintext]
 
 `(lin)*17*(bright|n)`
 ``` graphviz
-digraph SyntaxTree0x7fffffffe060 {
+digraph SyntaxTree0x7fffffffdf50 {
 node [shape=plaintext]
 "cat0" [label = "•"]
 "cat0" -> "cat1"
