@@ -1,5 +1,5 @@
 bin/*
 lib/*
-./display.md
-./graph.md
-./tree.md
+display.md
+graph.md
+tree.md
