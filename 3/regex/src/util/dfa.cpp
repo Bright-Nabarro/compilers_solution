@@ -218,7 +218,7 @@ auto DFA::cal_followpos(uptr_t& uptr) -> void
 	if (uptr->nodeType == SyntaxTree::Node::CAT)
 	{
 		auto lpleftItr = check_and_get_table_elements(&left, m_lastpos);
-		auto lpRightItr = check_and_get_table_elements(&right, m_lastpos);
+		auto lpRightItr = check_and_get_table_elements(&right, m_firstpos);
 		const auto& lpRight = lpRightItr->second;
 		for (auto puptrLeft : lpleftItr->second)
 		{

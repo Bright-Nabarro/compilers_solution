@@ -383,9 +383,9 @@ TEST(TestParse, test_parse_stream_normal)
 		EXPECT_EQ(ret[0].begPos, 0);
 	
 		// Test case 2: Multiple groups of (a|b)*c followed by "d" and (a|b)*
-		ret = parse_and_get(parse, ssm, "aabcbcadbbb");
+		ret = parse_and_get(parse, ssm, "aabcbcdbbb");
 		EXPECT_EQ(ret.size(), 1);
-		EXPECT_EQ(ret[0].context, "aabcbcadbbb");
+		EXPECT_EQ(ret[0].context, "aabcbcdbbb");
 		EXPECT_EQ(ret[0].begPos, 0);
 	
 		// Test case 3: Complex nested structure with multiple c's and trailing a's and b's
@@ -395,11 +395,12 @@ TEST(TestParse, test_parse_stream_normal)
 		EXPECT_EQ(ret[0].begPos, 0);
 	
 		// Test case 4: Input with extra characters before and after valid match
-		ret = parse_and_get(parse, ssm, "xxabcbcadbaxx");
+		ret = parse_and_get(parse, ssm, "xxabcbcdbaxx");
 		EXPECT_EQ(ret.size(), 1);
-		EXPECT_EQ(ret[0].context, "abcbcadba");
+		EXPECT_EQ(ret[0].context, "abcbcdba");
 		EXPECT_EQ(ret[0].begPos, 2);
 	}
 
     //=========END==========
 }
+
