@@ -86,6 +86,9 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		mainConfigure.set_noparse(true);
 	}
 
+	return true;
+}
+
 
 template<typename ObjFunc, typename Obj>
 void state_display(const sr::MainConfigure& mainConfigure,

@@ -305,9 +305,9 @@ TEST_F(TestDFA, test_lastpos)
 		EXPECT_EQ(dfa.m_lastpos.size(), 3);
 		auto& root = dfa.m_tree.m_root;
 		auto& end = root->rightChild;
-		auto& endSet = dfa.m_lastpos.find(&end)->second;
+		auto& endSet = dfa.m_lastpos.find(end)->second;
 		ASSERT_EQ(endSet.size(), 0);
-		auto& rootSet = dfa.m_lastpos.find(&root)->second;
+		auto& rootSet = dfa.m_lastpos.find(root)->second;
 		ASSERT_EQ(rootSet.size(), 0);
 	}
 	//{

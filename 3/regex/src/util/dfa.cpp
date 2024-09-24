@@ -156,7 +156,7 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 		else
 		{
 			auto retItr = check_and_get_table_elements(c1, *dealMap);
-			auto [_, success] = dealMap->insert({&uptr, retItr->second});
+			auto [_, success] = dealMap->insert({sptr, retItr->second});
 			assert(success);
 		}
 
@@ -166,9 +166,9 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 		assert(sptr->leftChild != nullptr);
 		assert(sptr->rightChild != nullptr);
 		auto leftItr =
-			check_and_get_table_elements(&uptr->leftChild, *dealMap);
+			check_and_get_table_elements(sptr->leftChild, *dealMap);
 		auto rightItr =
-			check_and_get_table_elements(&uptr->rightChild, *dealMap);
+			check_and_get_table_elements(sptr->rightChild, *dealMap);
 
 		auto dealSet = leftItr->second;
 		dealSet.insert(rightItr->second.cbegin(), rightItr->second.cend());
@@ -178,24 +178,24 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 	case SyntaxTree::Node::STAR: {
 		assert(sptr->leftChild != nullptr);
 		auto dealItr =
-			check_and_get_table_elements(&uptr->leftChild, *dealMap);
-		dealMap->insert({&uptr, dealItr->second});
+			check_and_get_table_elements(sptr->leftChild, *dealMap);
+		dealMap->insert({sptr, dealItr->second});
 		return;
 	}
 	case SyntaxTree::Node::LEAVE: {
-		auto [_, success] = dealMap->insert({&uptr, std::unordered_set{&uptr}});
+		auto [_, success] = dealMap->insert({sptr, std::unordered_set{sptr}});
 		assert(success);
 		return;
 	}
 	case SyntaxTree::Node::END: {
 		if constexpr (isFirst)
 		{
-			auto [_, success] = m_firstpos.insert({&uptr, std::unordered_set{&uptr}});
+			auto [_, success] = m_firstpos.insert({sptr, std::unordered_set{sptr}});
 			assert(success);
 		}
 		else
 		{
-			m_lastpos.insert({&uptr, {}});
+			m_lastpos.insert({sptr, {}});
 		}
 		return;
 	}
@@ -218,8 +218,8 @@ auto DFA::cal_followpos(sptr_t sptr) -> void
 	
 	if (sptr->nodeType == SyntaxTree::Node::CAT)
 	{
-		auto lpleftItr = check_and_get_table_elements(&left, m_lastpos);
-		auto lpRightItr = check_and_get_table_elements(&right, m_firstpos);
+		auto lpleftItr = check_and_get_table_elements(left, m_lastpos);
+		auto lpRightItr = check_and_get_table_elements(right, m_firstpos);
 		const auto& lpRight = lpRightItr->second;
 		for (auto puptrLeft : lpleftItr->second)
 		{
