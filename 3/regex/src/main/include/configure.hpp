@@ -47,6 +47,7 @@ public:
 	auto allfile() const -> bool;
 	auto get_noparse() const -> bool;
 
+
 private:
 	bool m_printable;
 	std::string m_outputdir;

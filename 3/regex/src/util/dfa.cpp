@@ -147,16 +147,16 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 		// if (nullable(c_1/ c_2)
 		if (nullableItr->second)
 		{
-			auto retItr = check_and_get_table_elements(c1, m_firstpos);
+			auto retItr = check_and_get_table_elements(c1, *dealMap);
 			auto retSet = retItr->second;
-			const auto& tmpSet = m_firstpos[c2];
+			const auto& tmpSet = (*dealMap)[c2];
 			retSet.insert(tmpSet.cbegin(), tmpSet.cend());
 			dealMap->insert({sptr, retSet});
 		}
 		else
 		{
-			auto retItr = check_and_get_table_elements(c1, m_firstpos);
-			auto [_, success] = dealMap->insert({sptr, retItr->second});
+			auto retItr = check_and_get_table_elements(c1, *dealMap);
+			auto [_, success] = dealMap->insert({&uptr, retItr->second});
 			assert(success);
 		}
 
@@ -166,9 +166,10 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 		assert(sptr->leftChild != nullptr);
 		assert(sptr->rightChild != nullptr);
 		auto leftItr =
-			check_and_get_table_elements(sptr->leftChild, m_firstpos);
+			check_and_get_table_elements(&uptr->leftChild, *dealMap);
 		auto rightItr =
-			check_and_get_table_elements(sptr->rightChild, m_firstpos);
+			check_and_get_table_elements(&uptr->rightChild, *dealMap);
+
 		auto dealSet = leftItr->second;
 		dealSet.insert(rightItr->second.cbegin(), rightItr->second.cend());
 		dealMap->insert({sptr, std::move(dealSet)});
@@ -177,14 +178,25 @@ auto DFA::cal_flpos(sptr_t sptr) -> void
 	case SyntaxTree::Node::STAR: {
 		assert(sptr->leftChild != nullptr);
 		auto dealItr =
-			check_and_get_table_elements(sptr->leftChild, m_firstpos);
-		dealMap->insert({sptr, dealItr->second});
+			check_and_get_table_elements(&uptr->leftChild, *dealMap);
+		dealMap->insert({&uptr, dealItr->second});
 		return;
 	}
-	case SyntaxTree::Node::LEAVE:
-	case SyntaxTree::Node::END: {
-		auto [_, success] = dealMap->insert({sptr, std::unordered_set{sptr}});
+	case SyntaxTree::Node::LEAVE: {
+		auto [_, success] = dealMap->insert({&uptr, std::unordered_set{&uptr}});
 		assert(success);
+		return;
+	}
+	case SyntaxTree::Node::END: {
+		if constexpr (isFirst)
+		{
+			auto [_, success] = m_firstpos.insert({&uptr, std::unordered_set{&uptr}});
+			assert(success);
+		}
+		else
+		{
+			m_lastpos.insert({&uptr, {}});
+		}
 		return;
 	}
 	default:
@@ -206,8 +218,8 @@ auto DFA::cal_followpos(sptr_t sptr) -> void
 	
 	if (sptr->nodeType == SyntaxTree::Node::CAT)
 	{
-		auto lpleftItr = check_and_get_table_elements(left, m_lastpos);
-		auto lpRightItr = check_and_get_table_elements(right, m_lastpos);
+		auto lpleftItr = check_and_get_table_elements(&left, m_lastpos);
+		auto lpRightItr = check_and_get_table_elements(&right, m_firstpos);
 		const auto& lpRight = lpRightItr->second;
 		for (auto puptrLeft : lpleftItr->second)
 		{
@@ -230,46 +242,6 @@ auto DFA::cal_followpos(sptr_t sptr) -> void
 
 auto DFA::construct_graph() -> void
 {
-	//auto& charTable = m_tree.m_charTrick;
-	//auto& pEnd = m_tree.mp_end;
-	//std::queue<std::shared_ptr<vertex>> dataStats;
-	//const auto& firstEle = m_firstpos.at(&m_tree.m_root);
-	//auto [firstItr, insSuccess] = m_vertexTable.insert(
-	//		make_pair(make_shared<vertex>(firstEle),
-	//		firstEle.contains(pEnd)));
-	//if (!insSuccess)
-	//	throw std::logic_error { "m_vertexTable has elements" };
-	//dataStats.push(firstItr->first);
-
-	//while (!dataStats.empty())
-	//{
-	//	auto pS = dataStats.front();
-	//	dataStats.pop();
-	//	for (char c : charTable)
-	//	{
-	//		auto pU = make_shared<vertex>(std::unordered_set<puptr_t>{});
-	//		for (const auto& puptr : *pS)
-	//		{
-	//			if ((*puptr)->leavePtr->chr != c)
-	//				continue;
-	//			auto followItr = m_followpos.find(puptr);
-	//			if (followItr != m_followpos.end())
-	//			{
-	//				const auto& pSet = followItr->second;
-	//				pU->insert(pSet.cbegin(), pSet.cend());
-	//			}
-	//		}
-	//		
-	//		bool markComplete = pU->contains(pEnd);
-	//		auto [insItr, insSuccess] = m_vertexTable.insert(std::pair{pU, markComplete});
-	//		if (insSuccess && !insItr->first->empty())
-	//			dataStats.push(insItr->first);
-	//		
-	//		//Dtran[S, a] = U
-	//		m_graph.insert( { pS, std::pair{ c, insItr->first } });
-	//	}
-	//}
-
 	auto& charTable = m_tree.m_charTrick;
 
 	m_begin = make_shared<vertex>(m_firstpos.at(m_tree.m_root));

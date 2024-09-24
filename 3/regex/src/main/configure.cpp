@@ -81,10 +81,10 @@ auto MainConfigure::allfile() const -> bool
 	return m_allfileMark;
 }
 
+
 auto MainConfigure::get_noparse() const -> bool
 {
 	return m_noparse;
 }
-
 
 }	//namespace simple_regex

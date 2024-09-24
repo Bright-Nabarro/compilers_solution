@@ -27,6 +27,7 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		("input,I", po::value<std::string>(), "Input filename")
 		("all,A", "parse all file (default each line)")
 		("noparse,N", "disable parse function (usually only used to observe output)");
+
 	
 	po::variables_map vm;
 	try {
@@ -85,8 +86,6 @@ auto parse_main_arg(sr::MainConfigure& mainConfigure,
 		mainConfigure.set_noparse(true);
 	}
 
-	return true;
-}
 
 template<typename ObjFunc, typename Obj>
 void state_display(const sr::MainConfigure& mainConfigure,
