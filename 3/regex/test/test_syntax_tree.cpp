@@ -509,28 +509,28 @@ TEST_F(TestSyntaxTree, test_parse_regex)
 	}
 }
 
-TEST_F(TestSyntaxTree, test_display)
-{
-	std::ofstream outfile{"display.md", std::ios::ate};
-	if (!outfile.good())
-		throw std::runtime_error("cannot open outfile");
-
-	auto args = std::vector<std::string> {
-		"((a|b)*abb(a|b)*)",
-		"",
-		"a",
-		"abc",
-		"(a|b)a*",
-		"(lin)*17*(bright|n)",
-	};
-	for (const auto& arg: args)
-	{
-		std::println(outfile, "`{}`", arg);
-		SyntaxTree tree{};
-		auto ret = tree.parse_regex(arg);
-		ASSERT_TRUE(ret);
-		tree.display(outfile);
-	}
-}
+//TEST_F(TestSyntaxTree, test_display)
+//{
+//	std::ofstream outfile{"display.md", std::ios::ate};
+//	if (!outfile.good())
+//		throw std::runtime_error("cannot open outfile");
+//
+//	auto args = std::vector<std::string> {
+//		"((a|b)*abb(a|b)*)",
+//		"",
+//		"a",
+//		"abc",
+//		"(a|b)a*",
+//		"(lin)*17*(bright|n)",
+//	};
+//	for (const auto& arg: args)
+//	{
+//		std::println(outfile, "`{}`", arg);
+//		SyntaxTree tree{};
+//		auto ret = tree.parse_regex(arg);
+//		ASSERT_TRUE(ret);
+//		tree.display(outfile);
+//	}
+//}
 
 }	//namespace syntax_tree

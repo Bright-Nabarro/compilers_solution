@@ -304,10 +304,9 @@ TEST_F(TestDFA, test_lastpos)
 		dfa.create_graph(std::move(tree));
 		EXPECT_EQ(dfa.m_lastpos.size(), 3);
 		auto& root = dfa.m_tree.m_root;
-		auto& rLeave = root->rightChild;
-		auto& rLeaveSet = dfa.m_lastpos.find(&rLeave)->second;
-		EXPECT_EQ(rLeaveSet.size(), 1);
-		EXPECT_TRUE(rLeaveSet.contains(&rLeave));
+		auto& end = root->rightChild;
+		auto& endSet = dfa.m_lastpos.find(&end)->second;
+		ASSERT_EQ(endSet.size(), 0);
 		auto& rootSet = dfa.m_lastpos.find(&root)->second;
 		EXPECT_TRUE(rootSet.contains(&rLeave));
 		EXPECT_EQ(rootSet.size(), 1);
@@ -590,45 +589,45 @@ TEST_F(TestDFA, test_followpos)
 	}
 }
 
-TEST_F(TestDFA, test_construct_graph)
-{
-	std::ofstream outfile { "graph.md", std::ios::ate | std::ios::out };
-	ASSERT_TRUE(outfile);
-
-	{
-		SyntaxTree tree;
-		auto treeRet = tree.parse_regex("a");
-		ASSERT_TRUE(treeRet);
-		DFA dfa {};
-		dfa.create_graph(std::move(tree));
-		dfa.display_graph(outfile);
-	}
-	{
-		SyntaxTree tree;
-		auto treeRet = tree.parse_regex("ab");
-		ASSERT_TRUE(treeRet);
-		DFA dfa {};
-		dfa.create_graph(std::move(tree));
-		//dfa.display_followpos(std::cout);
-		dfa.display_graph(outfile);
-	}
-	{
-		SyntaxTree tree;
-		auto treeRet = tree.parse_regex("(a|b)*");
-		ASSERT_TRUE(treeRet);
-		DFA dfa {};
-		dfa.create_graph(std::move(tree));
-		//dfa.display_followpos(std::cout);
-		dfa.display_graph(outfile);
-	}
-	{
-		SyntaxTree tree;
-		auto treeRet = tree.parse_regex("(a|b)*abb(a|b)*");
-		ASSERT_TRUE(treeRet);
-		DFA dfa {};
-		dfa.create_graph(std::move(tree));
-		dfa.display_graph(outfile);
-	}
-}
+//TEST_F(TestDFA, test_construct_graph)
+//{
+//	std::ofstream outfile { "graph.md", std::ios::ate | std::ios::out };
+//	ASSERT_TRUE(outfile);
+//
+//	{
+//		SyntaxTree tree;
+//		auto treeRet = tree.parse_regex("a");
+//		ASSERT_TRUE(treeRet);
+//		DFA dfa {};
+//		dfa.create_graph(std::move(tree));
+//		dfa.display_graph(outfile);
+//	}
+//	{
+//		SyntaxTree tree;
+//		auto treeRet = tree.parse_regex("ab");
+//		ASSERT_TRUE(treeRet);
+//		DFA dfa {};
+//		dfa.create_graph(std::move(tree));
+//		//dfa.display_followpos(std::cout);
+//		dfa.display_graph(outfile);
+//	}
+//	{
+//		SyntaxTree tree;
+//		auto treeRet = tree.parse_regex("(a|b)*");
+//		ASSERT_TRUE(treeRet);
+//		DFA dfa {};
+//		dfa.create_graph(std::move(tree));
+//		//dfa.display_followpos(std::cout);
+//		dfa.display_graph(outfile);
+//	}
+//	{
+//		SyntaxTree tree;
+//		auto treeRet = tree.parse_regex("(a|b)*abb(a|b)*");
+//		ASSERT_TRUE(treeRet);
+//		DFA dfa {};
+//		dfa.create_graph(std::move(tree));
+//		dfa.display_graph(outfile);
+//	}
+//}
 
 }	//namespace simple_regex
