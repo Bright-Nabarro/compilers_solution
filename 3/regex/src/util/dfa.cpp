@@ -63,28 +63,28 @@ void DFA::display_graph(std::ostream& os) const
 
 void DFA::display_followpos(std::ostream& os) const
 {
-	for (const auto& [ puptr, set ] : m_followpos)
+	for (const auto& [ sptr, set ] : m_followpos)
 	{
-		std::print(os, "{} :\t", (*puptr)->leavePtr->chr);
-		for ( const auto& puptr : set)
+		std::print(os, "{} :\t", sptr->leavePtr->chr);
+		for ( const auto& sptr : set)
 		{
-			std::print(os, "{} ", (*puptr)->leavePtr->chr);
+			std::print(os, "{} ", sptr->leavePtr->chr);
 		}
 		os << std::endl;
 	}
 }
 
-auto DFA::cal_nullable(uptr_t& uptr) -> bool
+auto DFA::cal_nullable(sptr_t sptr) -> bool
 {
 	bool ret;
 	bool leftRet = false, rightRet = false;
 	//确保每个分支节点都能递归
-	if (uptr->leftChild != nullptr)
-		leftRet = cal_nullable(uptr->leftChild); 
-	if (uptr->rightChild != nullptr)
-		rightRet = cal_nullable(uptr->rightChild);
+	if (sptr->leftChild != nullptr)
+		leftRet = cal_nullable(sptr->leftChild); 
+	if (sptr->rightChild != nullptr)
+		rightRet = cal_nullable(sptr->rightChild);
 
-	switch(uptr->nodeType)
+	switch(sptr->nodeType)
 	{
 	//OR和CAT必须拥有两个子节点
 	case SyntaxTree::Node::CAT:
@@ -103,44 +103,44 @@ auto DFA::cal_nullable(uptr_t& uptr) -> bool
 		break;
 	default:
 		throw std::logic_error {
-			std::format("expected node type {}", static_cast<int>(uptr->nodeType))
+			std::format("expected node type {}", static_cast<int>(sptr->nodeType))
 		};
 	}
 
-	m_nullable[&uptr] = ret;
+	m_nullable[sptr] = ret;
 	return ret;
 }
 
 
 //函数没有返回值，直接采用firstpos/lastpos map以节省空间
 template<bool isFirst>
-auto DFA::cal_flpos(uptr_t& uptr) -> void
+auto DFA::cal_flpos(sptr_t sptr) -> void
 {
 
-	if (uptr->leftChild != nullptr)
-		cal_flpos<isFirst>(uptr->leftChild);
-	if (uptr->rightChild != nullptr)
-		cal_flpos<isFirst>(uptr->rightChild);
+	if (sptr->leftChild != nullptr)
+		cal_flpos<isFirst>(sptr->leftChild);
+	if (sptr->rightChild != nullptr)
+		cal_flpos<isFirst>(sptr->rightChild);
 
-	std::unordered_map<puptr_t, std::unordered_set<puptr_t>>* dealMap;
+	std::unordered_map<sptr_t, std::unordered_set<sptr_t>>* dealMap;
 	if constexpr (isFirst)
 		dealMap = &m_firstpos;
 	else
 		dealMap = &m_lastpos;
 
-	switch(uptr->nodeType)
+	switch(sptr->nodeType)
 	{
 	case SyntaxTree::Node::CAT: {
-		puptr_t c1, c2;
+		sptr_t c1, c2;
 		if constexpr (isFirst)
 		{
-			c1 = &uptr->leftChild;
-			c2 = &uptr->rightChild;
+			c1 = sptr->leftChild;
+			c2 = sptr->rightChild;
 		}
 		else
 		{
-			c1 = &uptr->rightChild;
-			c2 = &uptr->leftChild;
+			c1 = sptr->rightChild;
+			c2 = sptr->leftChild;
 		}
 
 		auto nullableItr = check_and_get_table_elements(c1, m_nullable);
@@ -151,7 +151,7 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 			auto retSet = retItr->second;
 			const auto& tmpSet = (*dealMap)[c2];
 			retSet.insert(tmpSet.cbegin(), tmpSet.cend());
-			dealMap->insert({&uptr, retSet});
+			dealMap->insert({sptr, retSet});
 		}
 		else
 		{
@@ -163,19 +163,20 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 		return;
 	}
 	case SyntaxTree::Node::OR:{
-		assert(uptr->leftChild != nullptr);
-		assert(uptr->rightChild != nullptr);
+		assert(sptr->leftChild != nullptr);
+		assert(sptr->rightChild != nullptr);
 		auto leftItr =
 			check_and_get_table_elements(&uptr->leftChild, *dealMap);
 		auto rightItr =
 			check_and_get_table_elements(&uptr->rightChild, *dealMap);
+
 		auto dealSet = leftItr->second;
 		dealSet.insert(rightItr->second.cbegin(), rightItr->second.cend());
-		dealMap->insert({&uptr, std::move(dealSet)});
+		dealMap->insert({sptr, std::move(dealSet)});
 		return;
 	}
 	case SyntaxTree::Node::STAR: {
-		assert(uptr->leftChild != nullptr);
+		assert(sptr->leftChild != nullptr);
 		auto dealItr =
 			check_and_get_table_elements(&uptr->leftChild, *dealMap);
 		dealMap->insert({&uptr, dealItr->second});
@@ -200,22 +201,22 @@ auto DFA::cal_flpos(uptr_t& uptr) -> void
 	}
 	default:
 		throw std::logic_error {
-			std::format("expected node type {}", static_cast<int>(uptr->nodeType))
+			std::format("expected node type {}", static_cast<int>(sptr->nodeType))
 		};
 	}
 
 }
 
-auto DFA::cal_followpos(uptr_t& uptr) -> void
+auto DFA::cal_followpos(sptr_t sptr) -> void
 {
-	auto& left = uptr->leftChild;
-	auto& right = uptr->rightChild;
+	auto& left = sptr->leftChild;
+	auto& right = sptr->rightChild;
 	if (left != nullptr)
 		cal_followpos(left);
 	if (right != nullptr)
 		cal_followpos(right);
 	
-	if (uptr->nodeType == SyntaxTree::Node::CAT)
+	if (sptr->nodeType == SyntaxTree::Node::CAT)
 	{
 		auto lpleftItr = check_and_get_table_elements(&left, m_lastpos);
 		auto lpRightItr = check_and_get_table_elements(&right, m_firstpos);
@@ -226,10 +227,10 @@ auto DFA::cal_followpos(uptr_t& uptr) -> void
 			fp.insert(lpRight.cbegin(), lpRight.cend());
 		}
 	}
-	else if (uptr->nodeType == SyntaxTree::Node::STAR)
+	else if (sptr->nodeType == SyntaxTree::Node::STAR)
 	{
-		auto lprtItr = check_and_get_table_elements(&uptr, m_lastpos);
-		auto fprtItr = check_and_get_table_elements(&uptr, m_firstpos);
+		auto lprtItr = check_and_get_table_elements(sptr, m_lastpos);
+		auto fprtItr = check_and_get_table_elements(sptr, m_firstpos);
 		const auto& fprt = fprtItr->second;
 		for (auto lpItem : lprtItr->second)
 		{
@@ -243,9 +244,8 @@ auto DFA::construct_graph() -> void
 {
 	auto& charTable = m_tree.m_charTrick;
 
-	auto& pEnd = m_tree.mp_end;
-	m_begin = make_shared<vertex>(m_firstpos.at(&m_tree.m_root));
-	m_vertexTable.insert({m_begin, m_begin->contains(pEnd)});
+	m_begin = make_shared<vertex>(m_firstpos.at(m_tree.m_root));
+	m_vertexTable.insert({m_begin, m_begin->contains(m_tree.m_end)});
 
 	std::queue<std::shared_ptr<vertex>> dataStats;
 	dataStats.push(m_begin);
@@ -257,11 +257,11 @@ auto DFA::construct_graph() -> void
 		for (char c : charTable)
 		{
 			auto U = std::make_shared<vertex>();
-			for (puptr_t puptr : *S)
+			for (sptr_t sptr : *S)
 			{
-				if ((*puptr)->leavePtr->chr != c)
+				if (sptr->leavePtr->chr != c)
 					continue;
-				auto flwItr = m_followpos.find(puptr);
+				auto flwItr = m_followpos.find(sptr);
 				if (flwItr == m_followpos.end())
 					continue;
 				const auto& set = flwItr->second;
@@ -271,7 +271,7 @@ auto DFA::construct_graph() -> void
 				continue;
 
 			//需要处理相等问题
-			auto [ insItr, insSuccess ] = m_vertexTable.insert({U, U->contains(pEnd)});
+			auto [ insItr, insSuccess ] = m_vertexTable.insert({U, U->contains(m_tree.m_end)});
 			auto& Ulike = insItr->first;
 			if (insSuccess && !U->empty())
 				dataStats.push(Ulike);

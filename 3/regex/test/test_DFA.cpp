@@ -29,13 +29,13 @@ TEST_F(TestDFA, test_nullable)
 		dfa.create_graph(std::move(tree));
 		EXPECT_EQ(dfa.m_nullable.size(), 5);
 		auto& treeRoot = dfa.m_tree.m_root;
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		EXPECT_EQ(dfa.m_nullable.find(
-			&treeRoot->leftChild->leftChild)->second, false);
+			treeRoot->leftChild->leftChild)->second, false);
 		EXPECT_EQ(dfa.m_nullable.find(
-			&treeRoot->leftChild->rightChild)->second, false);
+			treeRoot->leftChild->rightChild)->second, false);
 	}
 	{
 		SyntaxTree tree{};
@@ -45,11 +45,11 @@ TEST_F(TestDFA, test_nullable)
 		EXPECT_EQ(dfa.m_nullable.size(), 4);
 		auto& treeRoot = dfa.m_tree.m_root;
 		//initial
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		//add
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, true);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, false);
 	}
 	{
 		SyntaxTree tree{};
@@ -59,12 +59,12 @@ TEST_F(TestDFA, test_nullable)
 		EXPECT_EQ(dfa.m_nullable.size(), 5);
 		auto& treeRoot = dfa.m_tree.m_root;
 		//initial
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		//add
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, false);
 	}
 	{
 		SyntaxTree tree{};
@@ -74,12 +74,12 @@ TEST_F(TestDFA, test_nullable)
 		EXPECT_EQ(dfa.m_nullable.size(), 6);
 		auto& treeRoot = dfa.m_tree.m_root;
 		//initial
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		//add
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, true);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, true);
 	}
 	{
 		SyntaxTree tree{};
@@ -89,12 +89,12 @@ TEST_F(TestDFA, test_nullable)
 		EXPECT_EQ(dfa.m_nullable.size(), 6);
 		auto& treeRoot = dfa.m_tree.m_root;
 		//initial
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		//add
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, true);
 	}
 	{
 		SyntaxTree tree{};
@@ -104,12 +104,12 @@ TEST_F(TestDFA, test_nullable)
 		EXPECT_EQ(dfa.m_nullable.size(), 7);
 		auto& treeRoot = dfa.m_tree.m_root;
 		//initial
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot)->second, false);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->rightChild)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot)->second, false);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->rightChild)->second, false);
 		//add
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild)->second, true);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, true);
-		EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, true);
+		EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, true);
 	}
 	{
 	    // 测试正则表达式 "a(b|c*)"
@@ -121,8 +121,8 @@ TEST_F(TestDFA, test_nullable)
 	    EXPECT_EQ(dfa.m_nullable.size(), 8);
 	    auto& treeRoot = dfa.m_tree.m_root;
 	
-	    EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, true);
-	    EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, false);
+	    EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, true);
+	    EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, false);
 	}
 	{
 	    // 测试正则表达式 "((a*)|b)c"
@@ -134,8 +134,8 @@ TEST_F(TestDFA, test_nullable)
 	    EXPECT_EQ(dfa.m_nullable.size(), 8);
 	    auto& treeRoot = dfa.m_tree.m_root;
 	
-	    EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->leftChild)->second, true);
-	    EXPECT_EQ(dfa.m_nullable.find(&treeRoot->leftChild->rightChild)->second, false);
+	    EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->leftChild)->second, true);
+	    EXPECT_EQ(dfa.m_nullable.find(treeRoot->leftChild->rightChild)->second, false);
 	}
 }
 
@@ -148,11 +148,11 @@ TEST_F(TestDFA, test_firstpos)
 		dfa.create_graph(std::move(tree));
 	    EXPECT_EQ(dfa.m_firstpos.size(), 3);
 		auto& leave = dfa.m_tree.m_root->leftChild;
-		auto& leaveSet = dfa.m_firstpos.find(&leave)->second;
+		auto& leaveSet = dfa.m_firstpos.find(leave)->second;
 		EXPECT_EQ(leaveSet.size(), 1);
-		EXPECT_TRUE(leaveSet.contains(&leave));
-		auto& rootSet = dfa.m_firstpos.find(&dfa.m_tree.m_root)->second;
-		EXPECT_TRUE(rootSet.contains(&leave));
+		EXPECT_TRUE(leaveSet.contains(leave));
+		auto& rootSet = dfa.m_firstpos.find(dfa.m_tree.m_root)->second;
+		EXPECT_TRUE(rootSet.contains(leave));
 	}
 	{
 		SyntaxTree tree{};
@@ -161,9 +161,9 @@ TEST_F(TestDFA, test_firstpos)
 		dfa.create_graph(std::move(tree));
 	    EXPECT_EQ(dfa.m_firstpos.size(), 5);
 		auto& oriRoot = dfa.m_tree.m_root->leftChild;
-		auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
+		auto& oriRootSet = dfa.m_firstpos.find(oriRoot)->second;
 		auto& oriLeftLeave = oriRoot->leftChild;
-		EXPECT_TRUE(oriRootSet.contains(&oriLeftLeave));
+		EXPECT_TRUE(oriRootSet.contains(oriLeftLeave));
 	}
 	{
 	    SyntaxTree tree{};
@@ -173,11 +173,11 @@ TEST_F(TestDFA, test_firstpos)
 	    
 	    EXPECT_EQ(dfa.m_firstpos.size(), 4); // 检查 firstpos 的大小
 	    auto& root = dfa.m_tree.m_root;
-	    auto& rootSet = dfa.m_firstpos.find(&root)->second;
+	    auto& rootSet = dfa.m_firstpos.find(root)->second;
 	    
 	    auto& starChild = root->leftChild->leftChild; // a 节点
 	    EXPECT_EQ(rootSet.size(), 2); // 检查根节点的 firstpos
-	    EXPECT_TRUE(rootSet.contains(&starChild)); // firstpos 应包含 a 的叶子节点
+	    EXPECT_TRUE(rootSet.contains(starChild)); // firstpos 应包含 a 的叶子节点
 	}
 	{
 	    SyntaxTree tree{};
@@ -190,15 +190,15 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& leftChild = root->leftChild->leftChild; // a 节点
 	    auto& rightChild = root->leftChild->rightChild; // b 节点
 	    
-	    auto& rootSet = dfa.m_firstpos.find(&root)->second;
-	    EXPECT_TRUE(rootSet.contains(&leftChild));
-	    EXPECT_TRUE(rootSet.contains(&rightChild));
+	    auto& rootSet = dfa.m_firstpos.find(root)->second;
+	    EXPECT_TRUE(rootSet.contains(leftChild));
+	    EXPECT_TRUE(rootSet.contains(rightChild));
 	    
-	    auto& leftSet = dfa.m_firstpos.find(&leftChild)->second;
-	    EXPECT_TRUE(leftSet.contains(&leftChild));
+	    auto& leftSet = dfa.m_firstpos.find(leftChild)->second;
+	    EXPECT_TRUE(leftSet.contains(leftChild));
 	    
-	    auto& rightSet = dfa.m_firstpos.find(&rightChild)->second;
-	    EXPECT_TRUE(rightSet.contains(&rightChild));
+	    auto& rightSet = dfa.m_firstpos.find(rightChild)->second;
+	    EXPECT_TRUE(rightSet.contains(rightChild));
 	}
 	{
 	    SyntaxTree tree{};
@@ -211,9 +211,9 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& leftChild = oriRoot->leftChild->leftChild; // a 节点
 	    auto& rightChild = oriRoot->leftChild->rightChild; // b 节点
 	
-	    auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
-	    EXPECT_TRUE(oriRootSet.contains(&leftChild));
-	    EXPECT_TRUE(oriRootSet.contains(&rightChild));
+	    auto& oriRootSet = dfa.m_firstpos.find(oriRoot)->second;
+	    EXPECT_TRUE(oriRootSet.contains(leftChild));
+	    EXPECT_TRUE(oriRootSet.contains(rightChild));
 	}
 	{
 	    SyntaxTree tree{};
@@ -226,11 +226,11 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& leftChild = root->leftChild->leftChild; // a 节点
 	    auto& rightChild = root->leftChild->rightChild; // b|c 的根节点
 	
-	    auto& rootSet = dfa.m_firstpos.find(&root)->second;
-	    EXPECT_TRUE(rootSet.contains(&leftChild));
+	    auto& rootSet = dfa.m_firstpos.find(root)->second;
+	    EXPECT_TRUE(rootSet.contains(leftChild));
 	    
 	    auto& rightChildLeft = rightChild->leftChild;
-	    EXPECT_TRUE(dfa.m_firstpos.find(&rightChild)->second.contains(&rightChildLeft));
+	    EXPECT_TRUE(dfa.m_firstpos.find(rightChild)->second.contains(rightChildLeft));
 	}
 	{
 	    SyntaxTree tree{};
@@ -244,15 +244,15 @@ TEST_F(TestDFA, test_firstpos)
 	    auto& leftChild = oriRoot->leftChild;		// a* 的节点
 	    auto& rightChild = oriRoot->rightChild;		// b 的节点
 	
-	    auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
-	    EXPECT_TRUE(oriRootSet.contains(&leftChild->leftChild));
-		EXPECT_TRUE(oriRootSet.contains(&rightChild));
+	    auto& oriRootSet = dfa.m_firstpos.find(oriRoot)->second;
+	    EXPECT_TRUE(oriRootSet.contains(leftChild->leftChild));
+		EXPECT_TRUE(oriRootSet.contains(rightChild));
 	
-	    auto& leftSet = dfa.m_firstpos.find(&leftChild)->second;
-	    EXPECT_TRUE(leftSet.contains(&leftChild->leftChild));
+	    auto& leftSet = dfa.m_firstpos.find(leftChild)->second;
+	    EXPECT_TRUE(leftSet.contains(leftChild->leftChild));
 	
-	    auto& rightSet = dfa.m_firstpos.find(&rightChild)->second;
-	    EXPECT_TRUE(rightSet.contains(&rightChild));
+	    auto& rightSet = dfa.m_firstpos.find(rightChild)->second;
+	    EXPECT_TRUE(rightSet.contains(rightChild));
 	}
 	{
 	    SyntaxTree tree{};		//       v  v v
@@ -271,25 +271,25 @@ TEST_F(TestDFA, test_firstpos)
 		auto& star2 = cat2->leftChild;
 		auto& a = star2->leftChild;
 
-		auto& aSet = dfa.m_firstpos.find(&a)->second;
-		EXPECT_TRUE(aSet.contains(&a));
+		auto& aSet = dfa.m_firstpos.find(a)->second;
+		EXPECT_TRUE(aSet.contains(a));
 		EXPECT_EQ(aSet.size(), 1);
-		auto& star2Set = dfa.m_firstpos.find(&star2)->second;
+		auto& star2Set = dfa.m_firstpos.find(star2)->second;
 		EXPECT_EQ(aSet, star2Set);
-		auto& cat2Set = dfa.m_firstpos.find(&cat2)->second;
+		auto& cat2Set = dfa.m_firstpos.find(cat2)->second;
 		EXPECT_EQ(cat2Set.size(), 2);
-		EXPECT_TRUE(cat2Set.contains(&a));
-		EXPECT_TRUE(cat2Set.contains(&b));
-		auto& cat1Set = dfa.m_firstpos.find(&cat1)->second;
+		EXPECT_TRUE(cat2Set.contains(a));
+		EXPECT_TRUE(cat2Set.contains(b));
+		auto& cat1Set = dfa.m_firstpos.find(cat1)->second;
 		EXPECT_EQ(cat1Set.size(), 3);
-		EXPECT_TRUE(cat1Set.contains(&a));
-		EXPECT_TRUE(cat1Set.contains(&b));
-		EXPECT_TRUE(cat1Set.contains(&c));
-		auto& oriRootSet = dfa.m_firstpos.find(&oriRoot)->second;
+		EXPECT_TRUE(cat1Set.contains(a));
+		EXPECT_TRUE(cat1Set.contains(b));
+		EXPECT_TRUE(cat1Set.contains(c));
+		auto& oriRootSet = dfa.m_firstpos.find(oriRoot)->second;
 		EXPECT_EQ(oriRootSet.size(), 3);
-		EXPECT_TRUE(oriRootSet.contains(&a));
-		EXPECT_TRUE(oriRootSet.contains(&b));
-		EXPECT_TRUE(oriRootSet.contains(&c));
+		EXPECT_TRUE(oriRootSet.contains(a));
+		EXPECT_TRUE(oriRootSet.contains(b));
+		EXPECT_TRUE(oriRootSet.contains(c));
 
 	}
 }
@@ -474,6 +474,8 @@ TEST_F(TestDFA, test_lastpos)
 	//	EXPECT_TRUE(cat1Set.contains(&b));
 	//	EXPECT_FALSE(cat1Set.contains(&a));
 	//}
+
+
 }
 
 TEST_F(TestDFA, test_followpos)
@@ -489,9 +491,9 @@ TEST_F(TestDFA, test_followpos)
 		EXPECT_EQ(dfa.m_followpos.size(), 1);
 		auto& a = root->leftChild;
 		auto& end = root->rightChild;
-		auto& setA = dfa.m_followpos.find(&a)->second;
+		auto& setA = dfa.m_followpos.find(a)->second;
 		EXPECT_EQ(setA.size(), 1);
-		EXPECT_TRUE(setA.contains(&end));
+		EXPECT_TRUE(setA.contains(end));
 	}
 	{
 		SyntaxTree tree;
@@ -505,12 +507,12 @@ TEST_F(TestDFA, test_followpos)
 		auto& cat1 = root->leftChild;
 		auto& a = cat1->leftChild;
 		auto& b = cat1->rightChild;
-		auto& aSet = dfa.m_followpos.find(&a)->second;
+		auto& aSet = dfa.m_followpos.find(a)->second;
 		EXPECT_EQ(aSet.size(), 1);
-		EXPECT_TRUE(aSet.contains(&b));
-		auto& bSet = dfa.m_followpos.find(&b)->second;
+		EXPECT_TRUE(aSet.contains(b));
+		auto& bSet = dfa.m_followpos.find(b)->second;
 		EXPECT_EQ(bSet.size(), 1);
-		EXPECT_TRUE(bSet.contains(&end));
+		EXPECT_TRUE(bSet.contains(end));
 	}
 	{
 		SyntaxTree tree;
@@ -522,10 +524,10 @@ TEST_F(TestDFA, test_followpos)
 		auto& root = dfa.m_tree.m_root;
 		auto& end = root->rightChild;
 		auto& a = root->leftChild->leftChild;
-		auto& aSet = dfa.m_followpos.find(&a)->second;
+		auto& aSet = dfa.m_followpos.find(a)->second;
 		EXPECT_EQ(aSet.size(), 2);
-		EXPECT_TRUE(aSet.contains(&a));
-		EXPECT_TRUE(aSet.contains(&end));
+		EXPECT_TRUE(aSet.contains(a));
+		EXPECT_TRUE(aSet.contains(end));
 	}
 	{
 		SyntaxTree tree;
@@ -540,12 +542,12 @@ TEST_F(TestDFA, test_followpos)
 		auto& a = or1->leftChild;
 		auto& b = or1->rightChild;
 		
-		auto& aSet = dfa.m_followpos.find(&a)->second;
+		auto& aSet = dfa.m_followpos.find(a)->second;
 		EXPECT_EQ(aSet.size(), 3);
-		EXPECT_TRUE(aSet.contains(&a));
-		EXPECT_TRUE(aSet.contains(&b));
-		EXPECT_TRUE(aSet.contains(&end));
-		auto& bSet = dfa.m_followpos.find(&b)->second;
+		EXPECT_TRUE(aSet.contains(a));
+		EXPECT_TRUE(aSet.contains(b));
+		EXPECT_TRUE(aSet.contains(end));
+		auto& bSet = dfa.m_followpos.find(b)->second;
 		EXPECT_EQ(aSet, bSet);
 	}
 	{
@@ -568,23 +570,23 @@ TEST_F(TestDFA, test_followpos)
 		auto& a1 = or1->leftChild;
 		auto& b2 = or1->rightChild;
 		
-		auto& a1Set = dfa.m_followpos.find(&a1)->second;
-		auto& b2Set = dfa.m_followpos.find(&b2)->second;
+		auto& a1Set = dfa.m_followpos.find(a1)->second;
+		auto& b2Set = dfa.m_followpos.find(b2)->second;
 		EXPECT_EQ(a1Set.size(), 3);
-		EXPECT_TRUE(a1Set.contains(&a1));
-		EXPECT_TRUE(a1Set.contains(&b2));
-		EXPECT_TRUE(a1Set.contains(&a3));
+		EXPECT_TRUE(a1Set.contains(a1));
+		EXPECT_TRUE(a1Set.contains(b2));
+		EXPECT_TRUE(a1Set.contains(a3));
 		EXPECT_EQ(b2Set, a1Set);
 
-		auto& a3Set = dfa.m_followpos.find(&a3)->second;
-		auto& b4Set = dfa.m_followpos.find(&b4)->second;
-		auto& b5Set = dfa.m_followpos.find(&b5)->second;
+		auto& a3Set = dfa.m_followpos.find(a3)->second;
+		auto& b4Set = dfa.m_followpos.find(b4)->second;
+		auto& b5Set = dfa.m_followpos.find(b5)->second;
 		EXPECT_EQ(a3Set.size(), 1);
 		EXPECT_EQ(b4Set.size(), 1);
 		EXPECT_EQ(b5Set.size(), 1);
-		EXPECT_TRUE(a3Set.contains(&b4));
-		EXPECT_TRUE(b4Set.contains(&b5));
-		EXPECT_TRUE(b5Set.contains(&end));
+		EXPECT_TRUE(a3Set.contains(b4));
+		EXPECT_TRUE(b4Set.contains(b5));
+		EXPECT_TRUE(b5Set.contains(end));
 	}
 }
 
@@ -628,5 +630,29 @@ TEST_F(TestDFA, test_followpos)
 //		dfa.display_graph(outfile);
 //	}
 //}
+
+//测试完成节点标定
+TEST_F(TestDFA, test_end)
+{
+	{
+		SyntaxTree tree;
+		auto treeRet = tree.parse_regex("a");
+		ASSERT_TRUE(treeRet);
+		DFA dfa {};
+		dfa.create_graph(std::move(tree));
+		dfa.display_followpos(std::cout);
+		std::cout<<std::flush;
+
+		auto& vtxTable = dfa.m_vertexTable;
+		size_t endCounter = 0;
+		for (const auto& [_, endMark] : vtxTable)
+		{
+			if (endMark)
+				endCounter += 1;
+		}
+		ASSERT_EQ(endCounter, 1);
+	}
+//---func end---
+}
 
 }	//namespace simple_regex

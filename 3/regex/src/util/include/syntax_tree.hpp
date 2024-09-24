@@ -37,12 +37,12 @@ private:
 			CAT, OR, STAR, LEAVE, END
 		};
 		NodeType nodeType;
-		std::unique_ptr<Leave> leavePtr;
-		std::unique_ptr<Node> leftChild;
-		std::unique_ptr<Node> rightChild;
+		std::shared_ptr<Leave> leavePtr;
+		std::shared_ptr<Node> leftChild;
+		std::shared_ptr<Node> rightChild;
 
-		Node(NodeType type, std::unique_ptr<Node> left = nullptr,
-			 std::unique_ptr<Node> right = nullptr):
+		Node(NodeType type, std::shared_ptr<Node> left = nullptr,
+			 std::shared_ptr<Node> right = nullptr):
 			nodeType { type },
 			leavePtr { nullptr }, 
 			leftChild { std::move(left) },
@@ -54,8 +54,8 @@ private:
 				};
 		}
 
-		Node(NodeType type, char chr, std::unique_ptr<Node> left = nullptr,
-			 std::unique_ptr<Node> right = nullptr):
+		Node(NodeType type, char chr, std::shared_ptr<Node> left = nullptr,
+			 std::shared_ptr<Node> right = nullptr):
 			nodeType { type }, leavePtr { std::make_unique<Leave>(chr) },
 			leftChild { std::move(left) }, rightChild { std::move(right) }
 		{
@@ -68,11 +68,11 @@ private:
 
 	[[nodiscard]]
 	auto parse(std::string_view sv)
-		-> tl::expected<std::unique_ptr<Node>, std::string>;
+		-> tl::expected<std::shared_ptr<Node>, std::string>;
 	[[nodiscard]]	//parse递归辅助函数
 	auto parse_cat(std::string_view sv, size_t leftBeg, size_t leftLen,
 		size_t rightBeg, size_t rightLen, Node::NodeType type)
-		-> tl::expected<std::unique_ptr<Node>, std::string>;
+		-> tl::expected<std::shared_ptr<Node>, std::string>;
 	[[nodiscard]]	//正常返回匹配括号的后一个字符
 	auto pattern_pth(std::string_view sv, size_t idx) const
 		-> tl::expected<size_t, std::string>;
@@ -87,14 +87,12 @@ private:
 		size_t starCounter = 0;
 		size_t leavesCounter = 0;
 	} displayContext;
-	void display(std::ostream& os, const std::unique_ptr<Node>& ptr,
+	void display(std::ostream& os, const std::shared_ptr<Node> ptr,
 			const std::string& ptrStr) const;
-	auto nodeType2string(const std::unique_ptr<Node>& ptr) const ->
+	auto nodeType2string(const std::shared_ptr<Node> ptr) const ->
 		std::optional<std::pair<std::string, std::string>>;
-	std::unique_ptr<Node> m_root;
-	std::unique_ptr<Node>* mp_end;
-	//std::unordered_set<std::unique_ptr<Node>*> m_leavesTable;
-	//std::unordered_map<char, std::unordered_set<std::unique_ptr<Node>*>> m_chrTable;
+	std::shared_ptr<Node> m_root;
+	std::shared_ptr<Node> m_end;
 	std::unordered_set<char> m_charTrick;
 	
 

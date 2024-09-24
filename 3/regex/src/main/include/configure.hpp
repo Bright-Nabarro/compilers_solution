@@ -45,7 +45,8 @@ public:
 	auto get_regex_string() const -> std::string;
 	auto get_istream() const -> std::istream&;
 	auto allfile() const -> bool;
-	auto noparse() const -> bool;
+	auto get_noparse() const -> bool;
+
 
 private:
 	bool m_printable;

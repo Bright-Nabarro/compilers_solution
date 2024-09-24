@@ -15,7 +15,7 @@ struct hash<std::unordered_set<Ty>>
 		auto hashTy = std::hash<Ty>{};
 		for (const auto& elem: set)
 		{
-			hashValue ^= hashTy(elem);
+            hashValue ^= hashTy(elem) + 0x9e3779b9 + (hashValue << 6) + (hashValue >> 2);
 		}
 		return hashValue;
 	}
@@ -29,9 +29,8 @@ namespace simple_regex
 class DFA
 {
 public:
-	using uptr_t = std::unique_ptr<SyntaxTree::Node>;
-	using puptr_t = std::unique_ptr<SyntaxTree::Node>*;
-	using vertex = std::unordered_set<puptr_t>;
+	using sptr_t = std::shared_ptr<SyntaxTree::Node>;
+	using vertex = std::unordered_set<sptr_t>;
 	DFA() = default;
 	DFA(const DFA&) = delete;
 	DFA& operator= (const DFA&) = delete;
@@ -48,16 +47,16 @@ public:
 	{ return m_vertexTable; }
 
 private:	//四个算法函数
-	auto cal_nullable(uptr_t& uptr) -> bool;
+	auto cal_nullable(sptr_t uptr) -> bool;
 	template<bool isFirst>
-	auto cal_flpos(uptr_t& uptr) -> void;
-	auto cal_followpos(uptr_t& uptr) -> void;
+	auto cal_flpos(sptr_t uptr) -> void;
+	auto cal_followpos(sptr_t uptr) -> void;
 	auto construct_graph() -> void;
 private:	//辅助函数
 	[[nodiscard]]
-	auto check_and_get_table_elements(puptr_t puptr, const auto& table) const
+	auto check_and_get_table_elements(sptr_t sptr, const auto& table) const
 	{
-		auto retPtr = table.find(puptr);
+		auto retPtr = table.find(sptr);
 		if (retPtr == table.end())	[[unlikely]]
 			throw std::logic_error {
 				"cannot find ptr in table"
@@ -100,10 +99,10 @@ private:	//辅助函数
 	};
 private:
 	SyntaxTree m_tree;
-	std::unordered_map<puptr_t, bool> m_nullable;
-	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_firstpos;
-	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_lastpos;
-	std::unordered_map<puptr_t, std::unordered_set<puptr_t>> m_followpos;
+	std::unordered_map<sptr_t, bool> m_nullable;
+	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_firstpos;
+	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_lastpos;
+	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_followpos;
 	//value为true代表此节点为终态
 	std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash, shdPtrVauleEqual> m_vertexTable;
 
@@ -122,6 +121,7 @@ private:
 	FRIEND_TEST(TestDFA, test_lastpos);
 	FRIEND_TEST(TestDFA, test_followpos);
 	FRIEND_TEST(TestDFA, test_construct_graph);
+	FRIEND_TEST(TestDFA, test_end);
 #endif
 };
 
