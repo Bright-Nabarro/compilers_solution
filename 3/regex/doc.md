@@ -29,4 +29,5 @@
 - [ ] `configure` 不再储存`istream`指针，而是使用bool判断`fstream`和`cin`
 - [ ] 优化所有输出逻辑, 尽量避免`std::cout` `std::cerr`
 - [ ] `followpos` 集合为空时不进行构建, 与其他三个集合不统一
+- [ ] `Node` 使用虚基类`visitor`重构
 
