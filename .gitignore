@@ -8,3 +8,4 @@ lex.yy.c
 compile_commands.json
 *.a
 ./.vscode
+bin/
