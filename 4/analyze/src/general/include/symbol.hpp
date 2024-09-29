@@ -21,6 +21,12 @@ public:
 	Symbol(bool is_terminal_flag, std::string_view sv):
 		Symbol(is_terminal(is_terminal_flag), sv){}
 
+	Symbol(const Symbol&) = default;
+	Symbol& operator=(const Symbol& rhs) = default;
+	Symbol(Symbol&&) = default;
+	Symbol& operator=(Symbol&&) = default;
+	virtual ~Symbol() = default;
+
 	[[nodiscard]]
 	const std::string& symbol_string() const noexcept
 	{ return m_symbol; }
@@ -54,8 +60,8 @@ private:
 	}
 
 private:
-	const SymbolType m_type;
-	const std::string m_symbol;
+	SymbolType m_type;
+	std::string m_symbol;
 };
 
 }	//namespace analyze

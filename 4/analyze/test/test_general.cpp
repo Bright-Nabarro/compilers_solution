@@ -80,7 +80,7 @@ TEST(TestGrammar, test_add_rules)
     ASSERT_TRUE(grammar.add_rule(non_terminal_symbol, new_rule_right));
 }
 
-TEST(YamlParser, test_parse)
+TEST(TestYamlParser, test_parse)
 {
 	YamlParser parser;
 	{
@@ -460,5 +460,29 @@ TEST(YamlParser, test_parse)
     	EXPECT_TRUE(found_epsilon_B);
 	}
 //=====function end
+}
+
+TEST(TestYamlParser, test_output)
+{
+	YamlParser parser;
+	auto initial_grammar = [&](std::string_view sv) -> Grammar
+	{
+		std::ifstream in_file {sv.data()};
+		assert(in_file);
+		auto ret = parser.parse(in_file);
+		assert(ret);
+		return std::move(*ret);
+		
+	};
+
+	std::ofstream outfile { "output.md" };
+	Grammar grammar;
+	for (size_t i = 1; i <= 6; i++)
+	{
+		std::println(outfile, "\nrule{}", i);
+		grammar = initial_grammar(std::format("./test/test_yaml/{}.yaml", i));
+		grammar.display_latex(outfile, true);
+	}
+	
 }
 

@@ -11,28 +11,30 @@
 namespace analyze
 {
 
+struct SymbolListHash
+{
+	/// 假定vector小于size_t的位数
+	std::size_t operator()(const std::vector<Symbol>& vec) const
+	{
+		if (vec.empty())
+			return 0;
+
+		auto hash_func = std::hash<Symbol>{};
+		std::size_t ret = hash_func(vec[0]);
+		for (size_t i = 0; i < vec.size(); ++i)
+		{
+			ret <<= 1;
+			ret ^= hash_func(vec[i]);
+		}
+		return ret;
+	}
+};
+
 class IGrammarParser;
 
 class Grammar
 {
-	struct SymbolListHash
-	{
-		/// 假定vector小于size_t的位数
-		std::size_t operator()(const std::vector<Symbol>& vec) const
-		{
-			if (vec.empty())
-				return 0;
 
-			auto hash_func = std::hash<Symbol>{};
-			std::size_t ret = hash_func(vec[0]);
-			for (size_t i = 0; i < vec.size(); ++i)
-			{
-				ret <<= 1;
-				ret ^= hash_func(vec[i]);
-			}
-			return ret;
-		}
-	};
 public:
 	using SymbolsSet = std::unordered_set<std::vector<Symbol>, SymbolListHash>;
 public:
@@ -50,9 +52,12 @@ public:
 	bool add_rule(Symbol left, std::vector<Symbol> right);
 	void set_start(Symbol start_symbol);
 	void display_latex(std::ostream& os, bool markdown = true) const;
-	/// 检擦所有no_terminal是否都作为左部出现
+	/// 检查所有no_terminal是否都作为左部出现
 	[[nodiscard]]
-	tl::expected<void, std::string> validate_noterminals() const;
+	bool validate_noterminals() const;
+
+	[[nodiscard]]	///只返回非终结符
+	std::unordered_map<Symbol, bool> infer_empty_string(const Symbol& symbol) const;
 	
 private:
 	std::optional<Symbol> m_start_symbol;

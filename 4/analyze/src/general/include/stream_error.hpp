@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __YQ_STREAM_ERROR_HPP__
+#define __YQ_STREAM_ERROR_HPP__
+
 #include <system_error>
 #include <iostream>
 
@@ -73,3 +75,4 @@ template <>
 struct is_error_code_enum<::yq::stream_errc> : true_type {};
 }	//namespace std	
 
+#endif //__YQ_STREAM_ERROR_HPP__

@@ -7,8 +7,10 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 add_executable(${TEST_TARGET} ${SRC})
 
 
-target_link_libraries(${TEST_TARGET} PRIVATE back_general)
-target_link_libraries(${TEST_TARGET} PRIVATE gtest)
+target_link_libraries(${TEST_TARGET} PRIVATE
+	back_general
+	gtest
+)
 
 target_include_directories( ${TEST_TARGET}
 	#	PRIVATE "./include"

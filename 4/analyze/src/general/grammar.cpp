@@ -62,23 +62,28 @@ void Grammar::display_latex(std::ostream& os, bool markdown) const
 	std::println(os, R"(\begin{{array}}{{rcl}})");
 	for (const auto& [lhs, set]: m_rules)
 	{
-		std::print(os, R"(\langle \text{} \rangle & \rightarrow & )", lhs.symbol_string());
-		for (const auto& rhs : set)
+		
+		std::print(os, R"(\langle \text{{{}}} \rangle & \rightarrow & )", lhs.symbol_string());
+		for (auto itr = set.cbegin();
+			 itr != set.cend();
+			 ++itr)
 		{
+			const auto& rhs = *itr;
 			if (rhs.empty())
 			{
 				std::print(os, R"(ε )");
-				continue;
 			}
 
 			for (const auto& rhs_value : rhs)
 			{
-				if (rhs_value.type() == Symbol::terminal)
-					std::print(os, R"(\langle \text{} \rangle)", rhs_value.symbol_string());
-				else if (rhs_value.type() == Symbol::no_terminal)
+				if (rhs_value.type() == Symbol::no_terminal)
+					std::print(os, R"(\langle \text{{{}}} \rangle )", rhs_value.symbol_string());
+				else if (rhs_value.type() == Symbol::terminal)
 					std::print(os, R"({} )", rhs_value.symbol_string());
 			}
-			std::print(os, R"(\ | \ )") ;
+
+			if (std::next(itr) != set.cend())
+				std::print(os, R"(\ | \ )") ;
 		}
 		std::println(os, R"(\\)") ;
 	}
@@ -87,10 +92,25 @@ void Grammar::display_latex(std::ostream& os, bool markdown) const
 	if (markdown) std::println(os, "$$");
 }
 
-tl::expected<void, std::string> Grammar::validate_noterminals() const
+bool Grammar::validate_noterminals() const
 {
-	
+	std::unordered_map<Symbol, bool> uniq_noterminal;
+	uniq_noterminal.emplace(m_start_symbol, false);
+
+	for (auto [left, right_set] : m_rules)
+	{
+		auto left_itr = uniq_noterminal.find(left);
+		if (left_itr == uniq_noterminal.end())
+			uniq_noterminal.emplace(left, true);
+		else
+			left_itr->second = true;
+	}
+
 	return {};
+}
+
+std::unordered_map<Symbol, bool> Grammar::infer_empty_string(const Symbol& symbol) const
+{
 }
 
 tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)

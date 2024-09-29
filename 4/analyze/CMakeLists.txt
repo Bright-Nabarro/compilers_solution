@@ -51,12 +51,12 @@ include_directories(
 )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
-set(BIN_OUTPUT_DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+set(BIN_OUTPUT_DESTINATION ${CMAKE_SOURCE_DIR}/bin/)
 set(SRC_ROOT ${CMAKE_SOURCE_DIR}/src)
 
 #add_subdirectory("src/main")
 add_subdirectory("src/general")
-#add_subdirectory("src/LL")
+add_subdirectory("src/LL")
 
 if (ENABLE_TESTING)
 	find_package(GTest REQUIRED)
