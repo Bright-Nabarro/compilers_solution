@@ -19,7 +19,6 @@ Symbol Grammar::get_start_unchecked() const
 	return m_start_symbol.value();
 }
 
-
 auto Grammar::find(const Symbol& symbol) const
 		-> tl::expected<std::reference_wrapper<const SymbolsSet>, std::string>
 {
@@ -50,8 +49,11 @@ bool Grammar::add_rule(Symbol left, std::vector<Symbol> right)
 
 void Grammar::set_start(Symbol start_symbol)
 {
-	if (start_symbol.type() != Symbol::no_terminal)
+	if (start_symbol.type() != Symbol::no_terminal) [[unlikely]]
 		throw std::logic_error { "start symbol must specifie no_terminal" };
+	if (!m_rules.contains(start_symbol)) [[unlikely]]
+		throw std::logic_error { "unkown start symbol" };
+
 	m_start_symbol.emplace(std::move(start_symbol));
 }
 
@@ -95,22 +97,66 @@ void Grammar::display_latex(std::ostream& os, bool markdown) const
 bool Grammar::validate_noterminals() const
 {
 	std::unordered_map<Symbol, bool> uniq_noterminal;
-	uniq_noterminal.emplace(m_start_symbol, false);
+	if (!m_start_symbol.has_value())
+		return false;
 
-	for (auto [left, right_set] : m_rules)
+	uniq_noterminal.emplace(m_start_symbol.value(), false);
+
+	for (const auto& [left, right_set] : m_rules)
 	{
 		auto left_itr = uniq_noterminal.find(left);
 		if (left_itr == uniq_noterminal.end())
 			uniq_noterminal.emplace(left, true);
 		else
 			left_itr->second = true;
+		
+		for (const auto& right : right_set)
+		{
+			std::ranges::for_each(right,[&](const auto& symbol) {
+				//如果存在则会插入失败，不影响原值
+				uniq_noterminal.emplace(symbol, false);
+			});
+		}
 	}
 
-	return {};
+	for (const auto& [_, is_defined] : uniq_noterminal)
+		if (!is_defined)
+			return false;
+	return true;
 }
 
-std::unordered_map<Symbol, bool> Grammar::infer_empty_string(const Symbol& symbol) const
+[[nodiscard]]
+bool Grammar::nullable(const Symbol& symbol) const
 {
+	if (m_nullable.empty())
+		throw std::logic_error { "nullable table uninitialized" };
+
+	if (symbol.type() != Symbol::no_terminal)
+		return false;
+	
+	return m_nullable.at(symbol);
+}
+
+void Grammar::infer_empty_string()
+{
+	for (const auto& [left, right_set] : m_rules)
+	{
+		m_nullable.emplace(left, false);
+		for (const auto& right : right_set)
+		{
+			if (right.size() > 1)
+				continue;
+
+			if (right.empty())
+				throw std::logic_error { "invalid right rule" };
+		}
+	}
+	
+}
+
+bool Grammar::infer_empty_string(const Symbol& symbol)
+{
+	
 }
 
 tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)
@@ -230,8 +276,11 @@ auto YamlParser::parse_rhs(Symbol& left, Grammar& grammar, const YAML::Node& rhs
 				return tl::make_unexpected(str_node_ret.error());
 			}
 		}
+		// right包含空串
+		if (right.empty())
+			right.push_back(Grammar::empty_symbol);
 
-		if (!grammar.add_rule(left, std::move(right)))		[[unlikely]]
+		if (!grammar.add_rule(left, std::move(right)))	[[unlikely]]
 		{
 			YAML::Emitter out;
 			out << rhs_set;

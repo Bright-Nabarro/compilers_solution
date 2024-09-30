@@ -58,7 +58,6 @@ private:
 	SymbolsSet find_recursive(Symbol& symbol);
 
 private:
-	inline static const Symbol empty_symbol { Symbol::other, "e" };
 	const Grammar& m_grammar;
 	std::unordered_map<Symbol, SymbolsSet> m_firstSet;
 };
