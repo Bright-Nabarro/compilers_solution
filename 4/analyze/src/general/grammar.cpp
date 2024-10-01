@@ -26,7 +26,7 @@ auto Grammar::find(const Symbol& symbol) const
 	if (itr == m_rules.end())	[[unlikely]]
 	{
 		return tl::make_unexpected(
-			std::format("right {} doesn't exist in rules", symbol.symbol_string())
+			std::format("right [{}] doesn't exist in rules", symbol.symbol_string())
 		);
 	}
 
@@ -51,8 +51,6 @@ void Grammar::set_start(Symbol start_symbol)
 {
 	if (start_symbol.type() != Symbol::no_terminal) [[unlikely]]
 		throw std::logic_error { "start symbol must specifie no_terminal" };
-	if (!m_rules.contains(start_symbol)) [[unlikely]]
-		throw std::logic_error { "unkown start symbol" };
 
 	m_start_symbol.emplace(std::move(start_symbol));
 }
@@ -104,17 +102,16 @@ bool Grammar::validate_noterminals() const
 
 	for (const auto& [left, right_set] : m_rules)
 	{
-		auto left_itr = uniq_noterminal.find(left);
-		if (left_itr == uniq_noterminal.end())
-			uniq_noterminal.emplace(left, true);
-		else
+		auto [ left_itr, success ] = uniq_noterminal.emplace(left, true);
+		if (!success)
 			left_itr->second = true;
 		
 		for (const auto& right : right_set)
 		{
 			std::ranges::for_each(right,[&](const auto& symbol) {
 				//如果存在则会插入失败，不影响原值
-				uniq_noterminal.emplace(symbol, false);
+				if (symbol.type() == Symbol::no_terminal)
+					uniq_noterminal.emplace(symbol, false);
 			});
 		}
 	}
@@ -141,22 +138,80 @@ void Grammar::infer_empty_string()
 {
 	for (const auto& [left, right_set] : m_rules)
 	{
-		m_nullable.emplace(left, false);
+		auto [left_itr, success] = m_nullable.emplace(left, false);
+		if (!success)
+			continue;
+
+		bool infer_empty = false;
 		for (const auto& right : right_set)
 		{
-			if (right.size() > 1)
-				continue;
-
-			if (right.empty())
-				throw std::logic_error { "invalid right rule" };
+			if (infer_empty_string(right))
+				infer_empty = true;
 		}
+		left_itr->second = infer_empty;
 	}
-	
 }
 
-bool Grammar::infer_empty_string(const Symbol& symbol)
+bool Grammar::infer_empty_string(const std::vector<Symbol>& right)
 {
+	if (right.empty())	[[unlikely]]
+		throw std::logic_error { "invalid right rule" };
 	
+	if (right == empty_right)
+		return true;
+
+	////此处的先行插入是必须的
+	//auto [right_itr, success] = m_nullable.emplace(right.front(), false);	
+	//if (!success)
+	//	return right_itr->second;
+	
+	bool infer_empty = false;
+	for (size_t right_idx = 0; right_idx < right.size(); ++right_idx)
+	{
+		//如果不是no_terminal, 则不可能推出空（empty_right在上面已经检测过）
+		if (right[right_idx].type() != Symbol::no_terminal)
+		{
+			infer_empty = false;
+			break;
+		}
+
+		//前一个推导不出空串，则结果不可能为真, 直接返回
+		if (right_idx != 0 && !infer_empty)
+			break;
+
+		//此处的先行插入是必须的
+		auto [right_itr, success] = m_nullable.emplace(right[right_idx], false);
+		if (!success)
+		{
+			infer_empty = right_itr->second;
+			continue;
+		}
+		
+
+		auto right_find_set_ret = find(right[right_idx]);
+		if (!right_find_set_ret) [[unlikely]]
+			throw std::logic_error {
+				std::format("unkown noterminal, {}", right_find_set_ret.error())
+			};
+
+		const auto& right_find_set = right_find_set_ret->get();
+		for (const auto& right_right : right_find_set)
+		{
+			if (infer_empty_string(right_right))
+			{
+				infer_empty = true;
+				break;
+			}
+			else
+			{
+				infer_empty = false;
+			}
+		}
+
+		right_itr->second = infer_empty;
+	}
+	
+	return infer_empty;
 }
 
 tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)

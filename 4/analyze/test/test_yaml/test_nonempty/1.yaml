@@ -1,0 +1,8 @@
+terminals:
+  - 'a'
+
+start_symbol: 'S'
+
+productions:
+  S:
+    - ['a']

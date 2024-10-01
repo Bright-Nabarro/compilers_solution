@@ -1,0 +1,24 @@
+terminals:
+  - 'a'
+  - 'b'
+  - 'c'
+  - 'd'
+
+start_symbol: 'S'
+
+productions:
+  S:
+    - ['A', 'B']
+  A:
+    - ['a', 'S']
+    - ['B', 'C']
+  B:
+    - ['D']
+    - ['b', 'S']
+  C:
+    - ['a', 'c']
+    - []
+  D:
+    - ['d', 'c']
+    - []
+

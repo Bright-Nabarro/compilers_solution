@@ -26,12 +26,12 @@ TEST(TestGrammar, test_start_symbol)
     // 3. 测试设置 start_symbol 为合法的非终结符
     {
         Symbol no_terminal_symbol(Symbol::no_terminal, "non_terminal_symbol");
-        EXPECT_NO_THROW(grammar.set_start(no_terminal_symbol));
+        ASSERT_NO_THROW(grammar.set_start(no_terminal_symbol));
 
         // 验证 get_start 返回正确的符号
         auto result = grammar.get_start();
-        EXPECT_TRUE(result.has_value());
-        EXPECT_EQ(result.value(), no_terminal_symbol);  // 符号应匹配
+        ASSERT_TRUE(result);
+        EXPECT_EQ(*result, no_terminal_symbol);  // 符号应匹配
     }
 
     // 4. 测试替换 start_symbol
@@ -41,8 +41,8 @@ TEST(TestGrammar, test_start_symbol)
 
         // 检查新的 start_symbol 是否替换了旧的
         auto result = grammar.get_start();
-        EXPECT_TRUE(result.has_value());
-        EXPECT_EQ(result.value(), new_no_terminal_symbol);  // 应该是新的符号
+        ASSERT_TRUE(result);
+        EXPECT_EQ(*result, new_no_terminal_symbol);  // 应该是新的符号
     }
 
     // 5. 测试通过布尔值构造符号（非终结符）
@@ -52,8 +52,8 @@ TEST(TestGrammar, test_start_symbol)
 
         // 验证 get_start 返回通过布尔值构造的符号
         auto result = grammar.get_start();
-        EXPECT_TRUE(result.has_value());
-        EXPECT_EQ(result.value(), bool_constructed_symbol);  // 符号应匹配
+        ASSERT_TRUE(result);
+        EXPECT_EQ(*result, bool_constructed_symbol);  // 符号应匹配
     }
 //end_function
 }
@@ -409,19 +409,19 @@ TEST(TestYamlParser, test_parse)
     	bool found_epsilon_A = false;
     	for (const auto& vec : set_A)
     	{
-    	    if (vec.size() == 2 && vec[0].symbol_string() == "a" && vec[1].symbol_string() == "A")
+			if (vec == Grammar::empty_right)
+			{
+    	        // A -> ε (空串)
+    	        found_epsilon_A = true;
+			}
+			else if (vec.size() == 2 && vec[0].symbol_string() == "a" && vec[1].symbol_string() == "A")
     	    {
     	        // A -> aA
     	        EXPECT_EQ(vec[0].type(), Symbol::terminal);
     	        EXPECT_EQ(vec[1].type(), Symbol::no_terminal);
     	        found_aA = true;
     	    }
-    	    else if (vec.empty())
-    	    {
-    	        // A -> ε (空串)
-    	        found_epsilon_A = true;
-    	    }
-    	    else
+			else
     	    {
     	        FAIL() << "Unexpected rule for A";
     	    }
@@ -439,19 +439,18 @@ TEST(TestYamlParser, test_parse)
     	bool found_epsilon_B = false;
     	for (const auto& vec : set_B)
     	{
-    	    if (vec.size() == 2 && vec[0].symbol_string() == "b" && vec[1].symbol_string() == "B")
+    	    if (vec == Grammar::empty_right)
+			{
+			    // B -> ε (空串)
+    	        found_epsilon_B = true;
+
+			} else if (vec.size() == 2 && vec[0].symbol_string() == "b" && vec[1].symbol_string() == "B")
     	    {
     	        // B -> bB
     	        EXPECT_EQ(vec[0].type(), Symbol::terminal);
     	        EXPECT_EQ(vec[1].type(), Symbol::no_terminal);
     	        found_bB = true;
-    	    }
-    	    else if (vec.empty())
-    	    {
-    	        // B -> ε (空串)
-    	        found_epsilon_B = true;
-    	    }
-    	    else
+    	    } else
     	    {
     	        FAIL() << "Unexpected rule for B";
     	    }
@@ -484,5 +483,33 @@ TEST(TestYamlParser, test_output)
 		grammar.display_latex(outfile, true);
 	}
 	
+}
+
+auto load_grammar(std::string_view sv)
+{
+	static YamlParser parser;
+	std::ifstream in_file { sv.data() };
+	auto ret = parser.parse(in_file);
+	assert(ret);
+	return *ret;
+}
+
+TEST(TestGrammar, test_infer_empty_string)
+{
+	for (size_t i = 1; i <= 8; ++i)
+	{
+		auto grammar = load_grammar(std::format("./test/test_yaml/test_empty/{}.yaml", i));
+		ASSERT_TRUE(grammar.validate_noterminals());
+		ASSERT_NO_THROW(grammar.infer_empty_string());
+		EXPECT_TRUE(grammar.nullable(grammar.get_start_unchecked()));
+	}
+	for (size_t i = 1; i <= 8; ++i)
+	{
+		auto grammar = load_grammar(std::format("./test/test_yaml/test_nonempty/{}.yaml", i));
+		ASSERT_TRUE(grammar.validate_noterminals());
+		ASSERT_NO_THROW(grammar.infer_empty_string());
+		EXPECT_FALSE(grammar.nullable(grammar.get_start_unchecked()));
+	}
+// end function
 }
 

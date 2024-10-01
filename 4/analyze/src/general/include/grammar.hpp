@@ -38,6 +38,7 @@ class Grammar
 public:
 	using SymbolsSet = std::unordered_set<std::vector<Symbol>, SymbolListHash>;
 	inline static const Symbol empty_symbol { Symbol::other, "e" };
+	inline static const std::vector empty_right { empty_symbol };
 public:
 	Grammar() = default;
 	virtual ~Grammar() = default;
@@ -51,7 +52,7 @@ public:
 	/// 如果重复插入相同的键值对，则返回false
 	[[nodiscard]]
 	bool add_rule(Symbol left, std::vector<Symbol> right);
-	/// 如果设置了m_rules中不存在的键，抛出异常
+	/// 
 	void set_start(Symbol start_symbol);
 	void display_latex(std::ostream& os, bool markdown = true) const;
 	/// 检查所有no_terminal是否都作为左部出现, 如果start_symbol未设置，返回false
@@ -60,14 +61,22 @@ public:
 	/// 如果m_nullable没有初始化，抛出异常
 	[[nodiscard]]
 	bool nullable(const Symbol& symbol) const;
-	/// 检测所有的no_terminal是否可达空，调用此函数之前需要调用validate_noterminals
+	/*
+	 * 检测所有的no_terminal是否可达空，调用此函数之前需要调用validate_noterminals
+	 * 提供近似`O(N+R)`时间复杂度，其中N为文法no_terminal数量，R为规则数
+	 */
 	void infer_empty_string();
 private:
-	bool infer_empty_string(const Symbol& symbol);
+	/*
+	 * 递归遍历所有vector.size() == 1的规则
+	 * 所有一开始遍历到的元素先在m_nullable上做初始化，
+	 * 递归前检查，以免死循环
+	 */
+	bool infer_empty_string(const std::vector<Symbol>& right);
 private:
 	std::optional<Symbol> m_start_symbol;
 	std::unordered_map<Symbol, SymbolsSet> m_rules;
-	//只存储no_terminal
+	/// 只存储no_terminal
 	std::unordered_map<Symbol, bool> m_nullable;
 };
 
