@@ -513,3 +513,36 @@ TEST(TestGrammar, test_infer_empty_string)
 // end function
 }
 
+auto load_grammar_nocheck(std::string_view sv)
+{
+	YamlParser parser;
+	std::ifstream in_file { sv.data() };
+	assert(in_file);
+	return parser.parse(in_file);
+
+};
+
+TEST(TestYamlParser, test_parse_exception)
+{
+	
+
+	for (size_t i = 1; i <= 4; ++i)
+	{
+		EXPECT_FALSE(
+			load_grammar_nocheck(std::format("./test/test_yaml/exception/{}.yaml", i))
+		);
+	}
+	
+//end function
+}
+
+TEST(TestYamlParser, test_no_start_symbol)
+{
+	auto ret = load_grammar_nocheck("./test/test_yaml/no_start.yaml");
+	ASSERT_TRUE(ret);
+	Symbol S(Symbol::no_terminal, "S");
+	EXPECT_EQ(ret->get_start(), S); 
+	
+//endfunction
+}
+

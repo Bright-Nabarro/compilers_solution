@@ -1,0 +1,8 @@
+#productions内无内容
+terminals:
+  - 'a'
+
+start_symbol: 'S'
+
+productions:
+

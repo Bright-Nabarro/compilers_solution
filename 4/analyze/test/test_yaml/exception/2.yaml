@@ -1,0 +1,9 @@
+# 缺少 productions 关键字
+terminals:
+  - 'a'
+
+start_symbol: 'S'
+
+S:
+  - []
+

@@ -13,7 +13,7 @@ namespace analyze
 
 struct SymbolListHash
 {
-	/// 假定vector小于size_t的位数
+	/// 假定vector小于size_t的位数(如果大于size_t位数，可能效率会变低，不会影响程序正确性)
 	std::size_t operator()(const std::vector<Symbol>& vec) const
 	{
 		if (vec.empty())
@@ -109,10 +109,10 @@ private:
 	template<typename Ty> [[nodiscard]]
 	static tl::expected<Ty, std::string> nothrow_as(const YAML::Node& node);
 	//有两层，第一层是所有对应规则集合，第二层是Symbol集合
+	[[nodiscard]]
 	auto parse_rhs(Symbol& left, Grammar& grammar, const YAML::Node& rhs_set,
 				   const std::unordered_set<std::string>& terminal_string_set) const
 		-> tl::expected<void, std::string>;
-
 };
 
 }		//namespace analyze

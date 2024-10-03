@@ -223,13 +223,13 @@ tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)
 
 	YAML::Node rules = YAML::Load(in);
 	
-	//move
-	auto terminals = rules["terminals"];
+	auto terminals = rules["terminals"]; //move
 	if (!terminals.IsDefined())	[[unlikely]]
 	{
 		return tl::make_unexpected(filed_error_msg("terminals"));
 	}
 	
+	//读取terminal元素
 	std::unordered_set<std::string> terminal_string_set;
 	for (auto itr = terminals.begin();
 		 itr != terminals.end();
@@ -264,6 +264,7 @@ tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)
 	if (productions.IsNull()) [[unlikely]]
 		return tl::make_unexpected("productions is null");
 
+	//读取产生式到grammar
 	bool first_value_mark = true;
 	for (auto rule: productions)
 	{
@@ -283,13 +284,15 @@ tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)
 		Symbol left { Symbol::no_terminal, lhs_string };
 		
 		//如果yaml没有指定开始标记，则以产生式集的第一个为开始符号
-		if (first_value_mark && !productions.IsDefined()) [[unlikely]]
+		if (first_value_mark && !start_symbol.IsDefined()) [[unlikely]]
 		{
 			first_value_mark = false;
 			grammar.set_start(Symbol{ Symbol::no_terminal, lhs_string });
 		}
 		
-		parse_rhs(left, grammar, rule.second, terminal_string_set);
+		auto parse_rhs_ret = parse_rhs(left, grammar, rule.second, terminal_string_set);
+		if (!parse_rhs_ret)
+			return tl::make_unexpected(parse_rhs_ret.error());
 	}
 
 	return grammar;
@@ -314,6 +317,8 @@ auto YamlParser::parse_rhs(Symbol& left, Grammar& grammar, const YAML::Node& rhs
 	-> tl::expected<void, std::string>
 {
 	std::vector<Symbol> right;
+	if (rhs_set.size() == 0)
+		return tl::make_unexpected("productions right is empty");
 	for (auto right_node : rhs_set)
 	{
 		right.clear();

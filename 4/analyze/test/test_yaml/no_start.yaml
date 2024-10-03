@@ -1,0 +1,10 @@
+terminals: [a, b]
+
+productions:
+  S:
+    - [A, B]
+  A:
+    - [a]
+  B:
+    - [b]
+

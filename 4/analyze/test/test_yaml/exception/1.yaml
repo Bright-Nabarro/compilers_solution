@@ -1,0 +1,8 @@
+# 缺少 terminal 关键字
+
+start_symbol: S
+
+productions:
+  S:
+    - []
+
