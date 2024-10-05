@@ -2,7 +2,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stdexcept>
-#include <queue>
 
 #include "grammar.hpp"
 
@@ -26,14 +25,13 @@ class FirstSet
 {
 public:
 	using SymbolsSet = std::unordered_set<Symbol>;
-	virtual ~FirstSet() = default;
 	explicit FirstSet(const Grammar& grammar);
-	///要求用户保证`has_set`为true
+	virtual ~FirstSet() = default;
 	[[nodiscard]]
-	auto get_set(const Symbol& symbol) const
-		-> const std::unordered_set<Symbol>;
+	std::optional<SymbolsSet> find_first(const Symbol& symbol) const;
+	/// 查找check是否存在于find的first集中
 	[[nodiscard]]
-	bool has_set(const Symbol& symbol) const;
+	bool in_firstset(const Symbol& find, const Symbol& check) const;
 private:
 	/*
 	 * construct 中产生的tl::expected以异常抛出
@@ -43,23 +41,25 @@ private:
 	
 	using RulesSet = std::unordered_set<std::vector<analyze::Symbol>,
 		  analyze::SymbolListHash>;
-	///插入两个容器: queue和m_firstSet
-	void unique_insert(std::queue<Symbol>& queue, Symbol left, RulesSet right);
-
 
 	template<typename RetType>
 	RetType check_expect(const tl::expected<RetType, std::string>& ret)
 	{
-		if (ret)
+		if (!ret)
 			throw FirstSetException{ret.error()};
 		return *ret;
 	}
 
-	SymbolsSet find_recursive(Symbol& symbol);
+	/*
+	 * 1) if X.type() == terminal，then FIRST(X) += X
+	 * 2) if X.type() == no_terminal, then FIRST(X) += FIRST(Y_1), if Y_1.nullable() -> FIRST(X) += FIRST(Y_2) ...
+	 * 3) if X.nullable(), then FIRST(X) += empty_symbol
+	 */
+	SymbolsSet find_first_recursive(const Symbol& symbol);
 
 private:
 	const Grammar& m_grammar;
-	std::unordered_map<Symbol, SymbolsSet> m_firstSet;
+	std::unordered_map<Symbol, SymbolsSet> m_first_set;
 };
 
 }	//namespace analyze

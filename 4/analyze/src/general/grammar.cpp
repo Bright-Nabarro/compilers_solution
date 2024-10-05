@@ -160,11 +160,6 @@ bool Grammar::infer_empty_string(const std::vector<Symbol>& right)
 	if (right == empty_right)
 		return true;
 
-	////此处的先行插入是必须的
-	//auto [right_itr, success] = m_nullable.emplace(right.front(), false);	
-	//if (!success)
-	//	return right_itr->second;
-	
 	bool infer_empty = false;
 	for (size_t right_idx = 0; right_idx < right.size(); ++right_idx)
 	{
@@ -186,7 +181,6 @@ bool Grammar::infer_empty_string(const std::vector<Symbol>& right)
 			infer_empty = right_itr->second;
 			continue;
 		}
-		
 
 		auto right_find_set_ret = find(right[right_idx]);
 		if (!right_find_set_ret) [[unlikely]]
@@ -213,8 +207,19 @@ bool Grammar::infer_empty_string(const std::vector<Symbol>& right)
 	
 	return infer_empty;
 }
+	
+std::unordered_set<Symbol> Grammar::no_terminals() const
+{
+	std::unordered_set<Symbol> result;
+	for (const auto& [ no_terminal, rules ] : m_rules)
+	{
+		result.emplace(no_terminal);
+	}
+	return result;
+}
 
-tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in)
+
+tl::expected<Grammar, std::string> YamlParser::parse(std::istream& in) const
 {
 	auto filed_error_msg = [](std::string_view sv)
 	{

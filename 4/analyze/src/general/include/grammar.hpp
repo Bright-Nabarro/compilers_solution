@@ -66,6 +66,8 @@ public:
 	 * 提供近似`O(N+R)`时间复杂度，其中N为文法no_terminal数量，R为规则数
 	 */
 	void infer_empty_string();
+	[[nodiscard]]
+	std::unordered_set<Symbol> no_terminals() const;
 private:
 	/*
 	 * 递归遍历所有vector.size() == 1的规则
@@ -95,7 +97,7 @@ public:
 	 */
 
 	[[nodiscard]]
-	virtual tl::expected<Grammar, std::string> parse(std::istream& in) = 0;
+	virtual tl::expected<Grammar, std::string> parse(std::istream& in) const = 0;
 	virtual ~IGrammarParser() = default;
 };
 
@@ -104,7 +106,7 @@ class YamlParser: public IGrammarParser
 public:
 	YamlParser() = default;
 	[[nodiscard]]
-	tl::expected<Grammar, std::string> parse(std::istream& in) override;
+	tl::expected<Grammar, std::string> parse(std::istream& in) const override;
 private:
 	template<typename Ty> [[nodiscard]]
 	static tl::expected<Ty, std::string> nothrow_as(const YAML::Node& node);

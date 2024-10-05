@@ -56,7 +56,7 @@ set(SRC_ROOT ${CMAKE_SOURCE_DIR}/src)
 
 #add_subdirectory("src/main")
 add_subdirectory("src/general")
-#add_subdirectory("src/LL")
+add_subdirectory("src/LL")
 
 if (ENABLE_TESTING)
 	find_package(GTest REQUIRED)

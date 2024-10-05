@@ -8,13 +8,14 @@ add_executable(${TEST_TARGET} ${SRC})
 
 
 target_link_libraries(${TEST_TARGET} PRIVATE
-	back_general
+	LL
 	gtest
 )
 
 target_include_directories( ${TEST_TARGET}
 	#	PRIVATE "./include"
 	PRIVATE "${SRC_ROOT}/general/include"
+	PRIVATE "${SRC_ROOT}/LL/include"
 )
 
 add_custom_command(
