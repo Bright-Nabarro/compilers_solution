@@ -26,7 +26,7 @@ auto FirstSet::find_first(const Symbol& symbol) const -> std::optional<SymbolsSe
 	return itr->second;
 }
 
-bool FirstSet::in_firstset(const Symbol& find, const Symbol& check) const
+bool FirstSet::in_first_set(const Symbol& find, const Symbol& check) const
 {
 	auto itr = m_first_set.find(find);
 	if (m_first_set.cend() == itr)

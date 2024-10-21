@@ -8,6 +8,14 @@
 namespace analyze
 {
 
+template<typename RetType>
+RetType check_expect(const tl::expected<RetType, std::string>& ret)
+{
+	if (!ret)
+		throw std::logic_error{ret.error()};
+	return *ret;
+}
+
 class FirstSetException: public std::logic_error
 {
 public:
@@ -31,7 +39,7 @@ public:
 	std::optional<SymbolsSet> find_first(const Symbol& symbol) const;
 	/// 查找check是否存在于find的first集中
 	[[nodiscard]]
-	bool in_firstset(const Symbol& find, const Symbol& check) const;
+	bool in_first_set(const Symbol& find, const Symbol& check) const;
 private:
 	/*
 	 * construct 中产生的tl::expected以异常抛出
@@ -42,13 +50,7 @@ private:
 	using RulesSet = std::unordered_set<std::vector<analyze::Symbol>,
 		  analyze::SymbolListHash>;
 
-	template<typename RetType>
-	RetType check_expect(const tl::expected<RetType, std::string>& ret)
-	{
-		if (!ret)
-			throw FirstSetException{ret.error()};
-		return *ret;
-	}
+	
 
 	/*
 	 * 1) if X.type() == terminal，then FIRST(X) += X

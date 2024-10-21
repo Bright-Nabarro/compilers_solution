@@ -36,7 +36,7 @@ class Grammar
 {
 
 public:
-	using SymbolsSet = std::unordered_set<std::vector<Symbol>, SymbolListHash>;
+	using RulesSet = std::unordered_set<std::vector<Symbol>, SymbolListHash>;
 	inline static const Symbol empty_symbol { Symbol::other, "e" };
 	inline static const std::vector empty_right { empty_symbol };
 public:
@@ -48,7 +48,7 @@ public:
 	Symbol get_start_unchecked() const;
 	[[nodiscard]]
 	auto find(const Symbol& symbol) const
-		-> tl::expected<std::reference_wrapper<const SymbolsSet>, std::string>;
+		-> tl::expected<std::reference_wrapper<const RulesSet>, std::string>;
 	/// 如果重复插入相同的键值对，则返回false
 	[[nodiscard]]
 	bool add_rule(Symbol left, std::vector<Symbol> right);
@@ -77,7 +77,7 @@ private:
 	bool infer_empty_string(const std::vector<Symbol>& right);
 private:
 	std::optional<Symbol> m_start_symbol;
-	std::unordered_map<Symbol, SymbolsSet> m_rules;
+	std::unordered_map<Symbol, RulesSet> m_rules;
 	/// 只存储no_terminal
 	std::unordered_map<Symbol, bool> m_nullable;
 };

@@ -20,7 +20,7 @@ Symbol Grammar::get_start_unchecked() const
 }
 
 auto Grammar::find(const Symbol& symbol) const
-		-> tl::expected<std::reference_wrapper<const SymbolsSet>, std::string>
+		-> tl::expected<std::reference_wrapper<const RulesSet>, std::string>
 {
 	auto itr = m_rules.find(symbol);
 	if (itr == m_rules.end())	[[unlikely]]
