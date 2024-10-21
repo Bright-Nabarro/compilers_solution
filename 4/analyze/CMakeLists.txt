@@ -72,7 +72,10 @@ endif()
 add_custom_target(move_compile_commands ALL
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_BINARY_DIR}/compile_commands.json"
-            "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json"
+            "${CMAKE_SOURCE_DIR}/compile_commands.json"
     DEPENDS "${CMAKE_BINARY_DIR}/compile_commands.json"
+	BYPRODUCTS "${CMAKE_SOURCE_DIR}/compile_commands.json"
+	COMMENT "generate compile_commands for clangd"
+	VERBATIM
 )
 
