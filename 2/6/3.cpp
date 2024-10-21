@@ -75,8 +75,10 @@ public:
             if (words(result)) continue;
 
             if (opr(result)) continue;
+			
+			if (skip_other()) continue;
             
-            return tl::unexpected { std::format("unmatched word pos:[{}] char:{}", m_pos, m_input[m_pos]) };
+            return tl::unexpected { std::format("unmatched word pos:[{}] char:`{}`", m_pos, m_input[m_pos]) };
         }
         
         return result;
@@ -259,14 +261,32 @@ private:
     void initial_keyword()
     {
        // m_wordsTable["true"] = Words{ TokenType::True, "true" };
-        std::array wordsList {
+        static const std::array wordsList {
             Token { TokenType::KeyWord, "true" },
             Token { TokenType::KeyWord, "false" },
+			Token { TokenType::KeyWord, "if" },
+			Token { TokenType::KeyWord, "else" },
         };
 
         for (const auto& words: wordsList)
             m_wordsTable.insert({ words.value, words });
     }
+
+	bool skip_other()
+	{
+		switch (m_input[m_pos])
+		{
+		case '(':
+		case ')':
+		case '{':
+		case '}':
+		case ';':
+			++m_pos;
+			return true;
+		default:
+			return false;
+		}
+	}
 
 private:
     size_t m_pos;
@@ -274,9 +294,20 @@ private:
     std::unordered_map<std::string, Token> m_wordsTable;
 };
 
-int main()
+int main(int argc, char* argv[])
 {
-    std::ifstream inFile { "input.c" };
+	if (argc <= 1)
+	{
+		std::println(stderr, "need a file");
+		return 1;
+	}
+    std::ifstream inFile { argv[1] };
+	if (!inFile)
+	{
+		std::println(stderr, "expected inFile");
+		return 1;
+	}
+
     std::string fileContext { std::istreambuf_iterator<char>(inFile),
         std::istreambuf_iterator<char>() };
 
@@ -292,5 +323,7 @@ int main()
     {
         std::println("< {}, `{}` >", token_type_to_str(x.type), x.value);
     }
+	
+	return 0;
 }
 
