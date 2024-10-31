@@ -280,6 +280,57 @@ auto DFA::construct_graph() -> void
 	}
 }
 
+void DFA::minimize()
+{
+	auto division = this->initial_division();
+	auto& charTable = m_tree.m_charTrick;
+	for (State& state : division)
+	{
+		ShdVertex base;
+		for (char symbol : charTable)
+		{
+			for (ShdVertex shdVertex : state)
+			{
+				auto next = get_next(shdVertex, symbol);
+				
+				if (next == nullptr)
+				{
+					
+				}
+			}
+		}
+	}
+}
+
+auto DFA::initial_division() -> StateDivision
+{
+	State acceptSet, nonAcceptSet;
+	for (auto [shdVertex, accept] : m_vertexTable)
+	{
+		//可接受态
+		if (accept)
+			acceptSet.insert(shdVertex);
+		else
+			nonAcceptSet.insert(shdVertex);
+	}
+	StateDivision ret;
+	ret.push_back(std::move(acceptSet));
+	ret.push_back(std::move(nonAcceptSet));
+	return ret;
+}
+
+auto DFA::get_next(ShdVertex, char) -> ShdVertex
+{
+	
+}
+
+void DFA::add_new_state(ShdVertex shdVertex)
+{
+	State state { shdVertex };
+	
+}
+
+
 }	//namespace simple_regex
 
 

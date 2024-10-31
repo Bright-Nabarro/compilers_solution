@@ -45,6 +45,8 @@ public:
 	{ return m_begin; }
 	const auto& get_vtxTable() const
 	{ return m_vertexTable; }
+	//最小化dfa
+	void minimize();
 
 private:	//四个算法函数
 	auto cal_nullable(sptr_t uptr) -> bool;
@@ -97,16 +99,27 @@ private:	//辅助函数
 				&& lhs.second == rhs.second;
 		}
 	};
+	using ShdVertex = std::shared_ptr<vertex>;
+	using State = std::unordered_set<ShdVertex, shdPtrVauleHash, shdPtrVauleEqual> ;
+	using StateDivision = std::vector<State>;
+	auto initial_division() -> StateDivision;
+	auto get_next(ShdVertex, char) -> ShdVertex;
+	
+	//auto new_state(ShdVertex shdVertex) 
+
 private:
+
 	SyntaxTree m_tree;
 	std::unordered_map<sptr_t, bool> m_nullable;
 	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_firstpos;
 	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_lastpos;
 	std::unordered_map<sptr_t, std::unordered_set<sptr_t>> m_followpos;
-	//value为true代表此节点为终态
-	std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash, shdPtrVauleEqual> m_vertexTable;
+	//value为true代表此节点为接受状态
+    std::unordered_map<std::shared_ptr<vertex>, bool, shdPtrVauleHash,
+                           shdPtrVauleEqual>
+        m_vertexTable;
 
-	std::unordered_map<
+    std::unordered_map<
 		std::pair<std::shared_ptr<vertex>, char>,
 		std::shared_ptr<vertex>,
 		pairShdPtrCharHash,
