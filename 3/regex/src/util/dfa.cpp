@@ -284,21 +284,45 @@ void DFA::minimize()
 {
 	auto division = this->initial_division();
 	auto& charTable = m_tree.m_charTrick;
-	for (State& state : division)
+
+	std::unordered_map<ShdVertex, State*> vertex2state;
+	for (auto& state : division)
 	{
-		ShdVertex base;
+		for (const auto& vertex: state)
+		{
+			vertex2state[vertex] = &state;
+		}
+	}
+
+	std::queue<State> workList;
+	for (const auto& state : division)
+	{
+		workList.push(state);
+	}
+
+	while(workList.empty())
+	{
+		State A = workList.front();
+		workList.pop();
+
 		for (char symbol : charTable)
 		{
-			for (ShdVertex shdVertex : state)
+			//前驱状态集合
+			State preStates;
+			
+			for (ShdVertex vertex : A)
 			{
-				auto next = get_next(shdVertex, symbol);
-				
-				if (next == nullptr)
+				auto nextVertex = get_next(vertex, symbol);
+				if (preStates.empty())
 				{
-					
+				}
+				else
+				{
 				}
 			}
+
 		}
+
 	}
 }
 
@@ -324,12 +348,12 @@ auto DFA::get_next(ShdVertex, char) -> ShdVertex
 	
 }
 
-void DFA::add_new_state(ShdVertex shdVertex)
-{
-	State state { shdVertex };
-	
-}
-
+//void DFA::add_new_state(ShdVertex shdVertex)
+//{
+//	State state { shdVertex };
+//	
+//}
+//
 
 }	//namespace simple_regex
 
